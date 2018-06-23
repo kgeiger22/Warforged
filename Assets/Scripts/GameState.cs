@@ -41,6 +41,7 @@ public class GameState : MonoBehaviour {
         {
             base.Enter();
             Player.SetPlayer(player_info);
+            CanvasManager.EnableCanvas(CanvasManager.Menu.STORE);
             type = State_Type.BUILD;
             switch (player_info)
             {
@@ -60,6 +61,7 @@ public class GameState : MonoBehaviour {
         {
             base.Exit();
             Player.G_CURRENT_PLAYER.HoldUnit(null);
+            CanvasManager.DisableCanvas(CanvasManager.Menu.STORE);
         }
     }
 
@@ -100,8 +102,9 @@ public class GameState : MonoBehaviour {
 
     private void Start()
     {
-
         //Set up all data needed to start the game
+        CanvasManager.Init();
+        CanvasManager.EnableCanvas(CanvasManager.Menu.STATE);
         Player.G_CURRENT_PLAYER = Player.G_PLAYERS[0];
         if (Player.G_CURRENT_PLAYER == null)
         {
@@ -109,7 +112,6 @@ public class GameState : MonoBehaviour {
         }
         G_GAMESTATE = new BuildState(Player.Info.PLAYER1);
         G_GAMESTATE.Enter();
-
 
         //Create all adjacency lists for tiles here
         World.G_WORLD.InitalizeTiles();
