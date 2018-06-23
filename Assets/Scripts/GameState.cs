@@ -56,6 +56,11 @@ public class GameState : MonoBehaviour {
                     break;
             }
         }
+        public override void Exit()
+        {
+            base.Exit();
+            Player.G_CURRENT_PLAYER.HoldUnit(null);
+        }
     }
 
     public class TurnState : State
@@ -88,6 +93,7 @@ public class GameState : MonoBehaviour {
 
     public static void NextState()
     {
+        G_GAMESTATE.Exit();
         G_GAMESTATE.next.Enter();
     }
 
