@@ -1,0 +1,209 @@
+fileFormatVersion: 2
+guid: 1b0c463ca167a9442938bea21156ed74
+ModelImporter:
+  serializedVersion: 22
+  fileIDToRecycleName:
+    100000: body
+    100002: eye_l
+    100004: eye_r
+    100006: //RootNode
+    100008: nail1
+    100010: nail10
+    100012: nail11
+    100014: nail12
+    100016: nail13
+    100018: nail14
+    100020: nail15
+    100022: nail16
+    100024: nail17
+    100026: nail18
+    100028: nail2
+    100030: nail3
+    100032: nail4
+    100034: nail5
+    100036: nail6
+    100038: nail7
+    100040: nail8
+    100042: nail9
+    100044: teethLower
+    100046: teethUpper
+    100048: tongue
+    400000: body
+    400002: eye_l
+    400004: eye_r
+    400006: //RootNode
+    400008: nail1
+    400010: nail10
+    400012: nail11
+    400014: nail12
+    400016: nail13
+    400018: nail14
+    400020: nail15
+    400022: nail16
+    400024: nail17
+    400026: nail18
+    400028: nail2
+    400030: nail3
+    400032: nail4
+    400034: nail5
+    400036: nail6
+    400038: nail7
+    400040: nail8
+    400042: nail9
+    400044: teethLower
+    400046: teethUpper
+    400048: tongue
+    2100000: Dog_blinn
+    2300000: body
+    2300002: eye_l
+    2300004: eye_r
+    2300006: nail1
+    2300008: nail10
+    2300010: nail11
+    2300012: nail12
+    2300014: nail13
+    2300016: nail14
+    2300018: nail15
+    2300020: nail16
+    2300022: nail17
+    2300024: nail18
+    2300026: nail2
+    2300028: nail3
+    2300030: nail4
+    2300032: nail5
+    2300034: nail6
+    2300036: nail7
+    2300038: nail8
+    2300040: nail9
+    2300042: teethLower
+    2300044: teethUpper
+    2300046: tongue
+    3300000: body
+    3300002: eye_l
+    3300004: eye_r
+    3300006: nail1
+    3300008: nail10
+    3300010: nail11
+    3300012: nail12
+    3300014: nail13
+    3300016: nail14
+    3300018: nail15
+    3300020: nail16
+    3300022: nail17
+    3300024: nail18
+    3300026: nail2
+    3300028: nail3
+    3300030: nail4
+    3300032: nail5
+    3300034: nail6
+    3300036: nail7
+    3300038: nail8
+    3300040: nail9
+    3300042: teethLower
+    3300044: teethUpper
+    3300046: tongue
+    4300000: nail18
+    4300002: nail17
+    4300004: nail16
+    4300006: nail15
+    4300008: nail14
+    4300010: nail13
+    4300012: nail12
+    4300014: nail11
+    4300016: nail10
+    4300018: nail9
+    4300020: nail8
+    4300022: nail7
+    4300024: nail6
+    4300026: nail5
+    4300028: nail4
+    4300030: nail3
+    4300032: nail2
+    4300034: nail1
+    4300036: tongue
+    4300038: eye_r
+    4300040: eye_l
+    4300042: body
+    4300044: teethUpper
+    4300046: teethLower
+  externalObjects: {}
+  materials:
+    importMaterials: 1
+    materialName: 0
+    materialSearch: 1
+    materialLocation: 1
+  animations:
+    legacyGenerateAnimations: 4
+    bakeSimulation: 0
+    resampleCurves: 1
+    optimizeGameObjects: 0
+    motionNodeName: 
+    rigImportErrors: 
+    rigImportWarnings: 
+    animationImportErrors: 
+    animationImportWarnings: 
+    animationRetargetingWarnings: 
+    animationDoRetargetingWarnings: 0
+    importAnimatedCustomProperties: 0
+    importConstraints: 0
+    animationCompression: 1
+    animationRotationError: 0.5
+    animationPositionError: 0.5
+    animationScaleError: 0.5
+    animationWrapMode: 0
+    extraExposedTransformPaths: []
+    extraUserProperties: []
+    clipAnimations: []
+    isReadable: 1
+  meshes:
+    lODScreenPercentages: []
+    globalScale: 1
+    meshCompression: 0
+    addColliders: 0
+    importVisibility: 1
+    importBlendShapes: 1
+    importCameras: 1
+    importLights: 1
+    swapUVChannels: 0
+    generateSecondaryUV: 0
+    useFileUnits: 1
+    optimizeMeshForGPU: 1
+    keepQuads: 0
+    weldVertices: 1
+    preserveHierarchy: 0
+    indexFormat: 0
+    secondaryUVAngleDistortion: 8
+    secondaryUVAreaDistortion: 15.000001
+    secondaryUVHardAngle: 88
+    secondaryUVPackMargin: 4
+    useFileScale: 1
+  tangentSpace:
+    normalSmoothAngle: 60
+    normalImportMode: 0
+    tangentImportMode: 3
+    normalCalculationMode: 4
+  importAnimation: 1
+  copyAvatar: 0
+  humanDescription:
+    serializedVersion: 2
+    human: []
+    skeleton: []
+    armTwist: 0.5
+    foreArmTwist: 0.5
+    upperLegTwist: 0.5
+    legTwist: 0.5
+    armStretch: 0.05
+    legStretch: 0.05
+    feetSpacing: 0
+    rootMotionBoneName: 
+    rootMotionBoneRotation: {x: 0, y: 0, z: 0, w: 1}
+    hasTranslationDoF: 0
+    hasExtraRoot: 0
+    skeletonHasParents: 1
+  lastHumanDescriptionAvatarSource: {instanceID: 0}
+  animationType: 0
+  humanoidOversampling: 1
+  additionalBone: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
