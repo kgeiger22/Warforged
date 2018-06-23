@@ -114,6 +114,12 @@ public class Tile : MonoBehaviour {
     {
         if (!EventSystem.current.IsPointerOverGameObject())
         {
+            //check if moving to tile
+            if (movable && SelectionManager.selected.unit && SelectionManager.selected.unit.BelongsToCurrentPlayer())
+            {
+                SelectionManager.selected.unit.MoveTo(this);
+            }
+
             SelectionManager.Select(this);
             if (Player.G_CURRENT_PLAYER.held_unit && Player.G_CURRENT_PLAYER.held_unit.GetComponent<Draggable>().IsPlaceable()) Player.G_CURRENT_PLAYER.held_unit.Place();
         }
@@ -151,6 +157,7 @@ public class Tile : MonoBehaviour {
     public void Place(Unit _unit)
     {
         unit = _unit;
+        unit.SetCoordinates(x, y);
     }
 
     public void Unplace()

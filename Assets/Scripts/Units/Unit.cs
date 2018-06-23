@@ -4,6 +4,9 @@ using UnityEngine;
 
 [RequireComponent(typeof(Draggable))]
 public abstract class Unit : MonoBehaviour {
+
+    static float move_speed = 15.0f;
+
     protected Draggable S_draggable;
 
     public enum Type
@@ -17,6 +20,7 @@ public abstract class Unit : MonoBehaviour {
     {
         DRAG,
         PLACED,
+        MOVING,
     }
 
     [SerializeField]
@@ -37,7 +41,12 @@ public abstract class Unit : MonoBehaviour {
 
     public int x { get; protected set; }
     public int y { get; protected set; }
-    
+    public void SetCoordinates(int _x, int _y)
+    {
+        x = _x;
+        y = _y;
+    }
+
     public int moves_remaining { get; protected set; }
     public static int GetCost(Type _type)
     {
@@ -55,13 +64,23 @@ public abstract class Unit : MonoBehaviour {
     }
 
     List<Tile> moveable_tiles = new List<Tile>();
-    //Stack<Tile> path = new Stack<Tile>();
+    Stack<Tile> path = new Stack<Tile>();
+    Vector3 velocity;
+    Vector3 heading;
 
     protected virtual void Awake()
     {
         S_draggable = GetComponent<Draggable>();
         current_state = State.DRAG; //begin in Drag state
         owner = Player.G_CURRENT_PLAYER;
+    }
+
+    protected virtual void Update()
+    {
+        if (current_state == State.MOVING)
+        {
+            MoveAlongPath();
+        }
     }
 
     protected void SwitchState(State _state)
@@ -96,8 +115,6 @@ public abstract class Unit : MonoBehaviour {
         transform.position = SelectionManager.selected.transform.position + new Vector3(0, 0.5f, 0);
         //tell the tile that it owns this unit
         SelectionManager.selected.Place(this);
-        x = SelectionManager.selected.x;
-        y = SelectionManager.selected.y;
         //reset player held value
         Player.G_CURRENT_PLAYER.held_unit = null;
         //switch unit state upon placement
@@ -136,11 +153,16 @@ public abstract class Unit : MonoBehaviour {
 
     }
 
+    private Tile GetCurrentTile()
+    {
+        return World.G_WORLD.GetTile(x, y);
+    }
+
     private void FindSelectableTiles()
     {
         Queue<Tile> process = new Queue<Tile>();
 
-        Tile current_tile = World.G_WORLD.GetTile(x, y);
+        Tile current_tile = GetCurrentTile();
         current_tile.distance = 0;
         process.Enqueue(current_tile);
         while (process.Count > 0)
@@ -173,7 +195,7 @@ public abstract class Unit : MonoBehaviour {
 
     public void Select()
     {
-        if (current_state == State.PLACED && Player.IsPlayerTurn(owner.info) && GameState.G_GAMESTATE.type == GameState.State_Type.TURN)
+        if (current_state == State.PLACED && BelongsToCurrentPlayer() && GameState.G_GAMESTATE.type == GameState.State_Type.TURN)
         {
             //get unit ready to move
             FindSelectableTiles();
@@ -183,5 +205,71 @@ public abstract class Unit : MonoBehaviour {
     public void Unselect()
     {
         RemoveSelectableTiles();
+    }
+
+    public bool BelongsToCurrentPlayer()
+    {
+        return owner.info == Player.G_CURRENT_PLAYER.info;
+    }
+
+    public void MoveTo(Tile tile)
+    {
+        GetCurrentTile().Unplace();
+        tile.Place(this);
+        //build path
+        path.Clear();
+        Tile next_tile = tile;
+        while (next_tile.parent != null)
+        {
+            path.Push(next_tile);
+            next_tile = next_tile.parent;
+        }
+        RemoveSelectableTiles();
+
+        //begin movement
+        current_state = State.MOVING;
+    }
+
+    void CalculateHeading(Vector3 target)
+    {
+        heading = target - transform.position;
+        heading.Normalize();
+    }
+
+    void SetHorizontalVelocity()
+    {
+        velocity = heading * move_speed;
+    }
+
+    private void MoveAlongPath()
+    {
+        //if path is empty, end moving state
+        if (path.Count == 0)
+        {
+            current_state = State.PLACED;
+        }
+        else
+        {
+            Tile t = path.Peek();
+            Vector3 target = t.transform.position;
+
+            //calculate units position on top of the target tile
+            target.y = transform.position.y;
+
+            if (Vector3.Distance(transform.position, target) >= 0.05f)
+            {
+                CalculateHeading(target);
+                SetHorizontalVelocity();
+
+                transform.forward = heading;
+                transform.position += velocity * Time.deltaTime;
+            }
+            else
+            {
+                //tile center reached
+                transform.position = target;
+                path.Pop();
+            }
+        }
     }
 }
