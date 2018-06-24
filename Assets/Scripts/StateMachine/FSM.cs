@@ -12,6 +12,13 @@ public class FSM : MonoBehaviour {
         state = state.next;
         state.Enter();
     }
+
+    public virtual void SetState(FSM_State _state)
+    {
+        state.Exit();
+        state = _state;
+        state.Enter();
+    }
 }
 
 public abstract class FSM_State

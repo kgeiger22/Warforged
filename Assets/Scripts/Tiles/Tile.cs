@@ -15,6 +15,7 @@ public class Tile : MonoBehaviour {
     }
     [SerializeField, HideInInspector]
     Tile_Type type;
+    public Tile_Type GetTileType() { return type; }
 
     [SerializeField, HideInInspector]
     Player.Info owner;
@@ -95,12 +96,14 @@ public class Tile : MonoBehaviour {
     {
         selected = true;
         if (unit) unit.Select();
+        CanvasManager.EnableCanvas(CanvasManager.Menu.TILEINFO);
     }
 
     public void Unselect()
     {
         selected = false;
         if (unit) unit.Unselect();
+        CanvasManager.DisableCanvas(CanvasManager.Menu.TILEINFO);
     }
 
     public void Hover()
