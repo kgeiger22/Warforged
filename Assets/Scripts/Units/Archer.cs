@@ -4,16 +4,17 @@ using UnityEngine;
 
 public class Archer : Unit
 {
+    public static int cost = 19;
 
     protected override void Awake()
     {
         base.Awake();
         type = Type.ARCHER;
         HP = 50;
-        ATK = 80;
+        ATK = 85;
         DEF = 8;
-        SPD = 5;
         ACC = 0.7f;
+        SPD = 5;
     }
 }
 

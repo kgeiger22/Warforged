@@ -40,6 +40,8 @@ public class Tile : MonoBehaviour {
     [HideInInspector]
     public bool movable;
     [HideInInspector]
+    public bool targettable;
+    [HideInInspector]
     public int distance;
     [HideInInspector]
     public Tile parent;
@@ -82,6 +84,7 @@ public class Tile : MonoBehaviour {
         if (selected) mat = Resources.Load<Material>("Materials/Selectable");
         else if (hovered) mat = Resources.Load<Material>("Materials/Hoverable");
         else if (movable) mat = Resources.Load<Material>("Materials/Movable");
+        else if (targettable) mat = Resources.Load<Material>("Materials/Targettable");
         else if (owner == Player.Info.PLAYER1) mat = Resources.Load<Material>("Materials/PurpleSelectable");
         else if (owner == Player.Info.PLAYER2) mat = Resources.Load<Material>("Materials/OrangeSelectable");
         else mat = Resources.Load<Material>("Materials/Highlight");
@@ -226,6 +229,7 @@ public class Tile : MonoBehaviour {
     public void Reset()
     {
         movable = false;
+        targettable = false;
         parent = null;
         distance = int.MaxValue;
     }

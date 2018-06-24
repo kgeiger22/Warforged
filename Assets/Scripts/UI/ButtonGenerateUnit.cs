@@ -21,7 +21,7 @@ public class ButtonGenerateUnit : MonoBehaviour {
 
     private void Update()
     {
-        if (GameState.G_GAMESTATE.type != GameState.State_Type.BUILD)
+        if (GameStateManager.GetGameState().type != GameState.State_Type.BUILD)
         {
             button.interactable = false;
         }

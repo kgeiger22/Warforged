@@ -13,14 +13,18 @@ public abstract class Unit : MonoBehaviour {
     {
         KNIGHT,
         ARCHER,
-        HOUND,
+        WARHOUND,
     }
 
     public enum State
     {
         DRAG,
         PLACED,
+        READYTOMOVE,
         MOVING,
+        READYTOATTACK,
+        ATTACKING,
+        FINISHED,
     }
 
     [SerializeField]
@@ -47,17 +51,18 @@ public abstract class Unit : MonoBehaviour {
         y = _y;
     }
 
+    public int health;
     public int moves_remaining { get; protected set; }
     public static int GetCost(Type _type)
     {
         switch (_type)
         {
             case Type.KNIGHT:
-                return 25;
+                return Knight.cost;
             case Type.ARCHER:
-                return 21;
-            case Type.HOUND:
-                return 18;
+                return Archer.cost;
+            case Type.WARHOUND:
+                return Warhound.cost;
             default:
                 return -1;
         }
@@ -65,11 +70,15 @@ public abstract class Unit : MonoBehaviour {
 
     List<Tile> moveable_tiles = new List<Tile>();
     Stack<Tile> path = new Stack<Tile>();
-    Vector3 velocity;
-    Vector3 heading;
+    protected Vector3 velocity;
+    protected Vector3 heading;
+
+    protected List<Ability> abilities = new List<Ability>();
+
 
     protected virtual void Awake()
     {
+        health = HP;
         S_draggable = GetComponent<Draggable>();
         current_state = State.DRAG; //begin in Drag state
         owner = Player.G_CURRENT_PLAYER;
@@ -153,7 +162,7 @@ public abstract class Unit : MonoBehaviour {
 
     }
 
-    private Tile GetCurrentTile()
+    public Tile GetCurrentTile()
     {
         return World.G_WORLD.GetTile(x, y);
     }
@@ -195,7 +204,7 @@ public abstract class Unit : MonoBehaviour {
 
     public void Select()
     {
-        if (current_state == State.PLACED && BelongsToCurrentPlayer() && GameState.G_GAMESTATE.type == GameState.State_Type.TURN)
+        if (current_state == State.PLACED && BelongsToCurrentPlayer() && GameStateManager.GetGameState().type == GameState.State_Type.TURN)
         {
             //get unit ready to move
             FindSelectableTiles();
@@ -271,5 +280,16 @@ public abstract class Unit : MonoBehaviour {
                 path.Pop();
             }
         }
+    }
+
+    public void AddAbility(Ability _ability)
+    {
+        abilities.Add(_ability);
+    }
+
+    public void DealDamage(float _damage)
+    {
+        float damage = _damage * DEF / 100.0f;
+        health -= (int)damage;
     }
 }

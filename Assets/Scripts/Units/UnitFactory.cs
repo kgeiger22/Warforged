@@ -17,7 +17,7 @@ public static class UnitFactory {
             case Unit.Type.ARCHER:
                 unit = GameObject.Instantiate(Resources.Load<Unit>("Prefabs/Archer"));
                 break;
-            case Unit.Type.HOUND:
+            case Unit.Type.WARHOUND:
                 unit = GameObject.Instantiate(Resources.Load<Unit>("Prefabs/Warhound"));
                 break;
             default:

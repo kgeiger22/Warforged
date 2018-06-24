@@ -57,7 +57,7 @@ GameObject:
   - component: {fileID: 114421581954172110}
   m_Layer: 0
   m_Name: Knight
-  m_TagString: Untagged
+  m_TagString: Unit
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -204,6 +204,7 @@ MonoBehaviour:
   type: 0
   player1_material: {fileID: 2100000, guid: 7da8098b40e0fc14eb7adb5239f1f6fc, type: 2}
   player2_material: {fileID: 2100000, guid: 2aa8201f0bca05a4f847c8afa68ad32b, type: 2}
+  health: 0
 --- !u!114 &114435416741889254
 MonoBehaviour:
   m_ObjectHideFlags: 1

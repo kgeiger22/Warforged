@@ -75,9 +75,19 @@ public class Player : MonoBehaviour {
         HoldUnit(null);
     }
 
+    public List<Unit> GetAllUnits()
+    {
+        List<Unit> list = new List<Unit>();
+        foreach (GameObject unit in GameObject.FindGameObjectsWithTag("Unit"))
+        {
+            list.Add(unit.GetComponent<Unit>());
+        }
+        return list;
+    }
+
     public static bool IsPlayerTurn()
     {
-        return (GameState.G_GAMESTATE.player_info == G_CURRENT_PLAYER.info);
+        return (GameStateManager.GetGameState().player_info == G_CURRENT_PLAYER.info);
     }
 
     public static bool IsPlayerTurn(Info _info)

@@ -4,15 +4,16 @@ using UnityEngine;
 
 public class Warhound : Unit
 {
+    public static int cost = 17;
 
     protected override void Awake()
     {
         base.Awake();
-        type = Type.HOUND;
-        HP = 150;
+        type = Type.WARHOUND;
+        HP = 110;
         ATK = 50;
         DEF = 12;
-        SPD = 6;
         ACC = 0.7f;
+        SPD = 6;
     }
 }
