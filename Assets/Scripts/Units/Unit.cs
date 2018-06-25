@@ -16,16 +16,7 @@ public abstract class Unit : MonoBehaviour {
         WARHOUND,
     }
 
-    public enum State
-    {
-        DRAG,
-        PLACED,
-        READYTOMOVE,
-        MOVING,
-        READYTOATTACK,
-        ATTACKING,
-        FINISHED,
-    }
+    UnitStateFSM fsm;
 
     [SerializeField]
     public Type type;
@@ -33,8 +24,7 @@ public abstract class Unit : MonoBehaviour {
     public Material player1_material;
     [SerializeField]
     public Material player2_material;
-
-    public State current_state { get; protected set; }
+    
     public Player owner { get; protected set; }
 
     public int HP { get; protected set; }
@@ -78,34 +68,17 @@ public abstract class Unit : MonoBehaviour {
 
     protected virtual void Awake()
     {
+        fsm = new UnitStateFSM(this);
         health = HP;
         S_draggable = GetComponent<Draggable>();
-        current_state = State.DRAG; //begin in Drag state
         owner = Player.G_CURRENT_PLAYER;
     }
 
     protected virtual void Update()
     {
-        if (current_state == State.MOVING)
+        if (fsm.GetUnitState().type == UnitState.State_Type.MOVING)
         {
             MoveAlongPath();
-        }
-    }
-
-    protected void SwitchState(State _state)
-    {
-        switch (_state)
-        {
-            case State.DRAG: //Drag state used for placing units on the map, used in setup
-                current_state = State.DRAG;
-                S_draggable.enabled = true;
-                break;
-            case State.PLACED: //Placed state used for after a unit is dragged onto a tile, used in setup
-                S_draggable.enabled = false;
-                current_state = State.PLACED;
-                break;
-            default:
-                break;
         }
     }
 
@@ -127,13 +100,15 @@ public abstract class Unit : MonoBehaviour {
         //reset player held value
         Player.G_CURRENT_PLAYER.held_unit = null;
         //switch unit state upon placement
-        SwitchState(State.PLACED);
+        fsm.NextState();
         //apply monetary cost to player
         Player.G_CURRENT_PLAYER.money -= GetCost(type);
         //drop the unit from player
         Player.G_CURRENT_PLAYER.DropUnit();
         //generate another draggable, remove this line for single-placement
-        UnitFactory.GenerateUnit(type); 
+        UnitFactory.GenerateUnit(type);
+        //Update selection
+        SelectionManager.Reselect();
     }
 
     public void SetMaterials(Material _mat)
@@ -167,7 +142,7 @@ public abstract class Unit : MonoBehaviour {
         return World.G_WORLD.GetTile(x, y);
     }
 
-    private void FindSelectableTiles()
+    public void FindSelectableTiles()
     {
         Queue<Tile> process = new Queue<Tile>();
 
@@ -193,7 +168,7 @@ public abstract class Unit : MonoBehaviour {
         }
     }
 
-    private void RemoveSelectableTiles()
+    public void RemoveSelectableTiles()
     {
         foreach (Tile tile in moveable_tiles)
         {
@@ -204,7 +179,8 @@ public abstract class Unit : MonoBehaviour {
 
     public void Select()
     {
-        if (current_state == State.PLACED && BelongsToCurrentPlayer() && GameStateManager.GetGameState().type == GameState.State_Type.TURN)
+        CanvasManager.EnableCanvas(CanvasManager.Menu.UNITINFO);
+        if (BelongsToCurrentPlayer() && GameStateManager.GetGameState().type == GameState.State_Type.TURN)
         {
             //get unit ready to move
             FindSelectableTiles();
@@ -213,6 +189,7 @@ public abstract class Unit : MonoBehaviour {
 
     public void Unselect()
     {
+        CanvasManager.DisableCanvas(CanvasManager.Menu.UNITINFO);
         RemoveSelectableTiles();
     }
 
@@ -234,9 +211,10 @@ public abstract class Unit : MonoBehaviour {
             next_tile = next_tile.parent;
         }
         RemoveSelectableTiles();
+        SelectionManager.Reselect();
 
         //begin movement
-        current_state = State.MOVING;
+        fsm.SetState(new MovingState(this));
     }
 
     void CalculateHeading(Vector3 target)
@@ -255,7 +233,8 @@ public abstract class Unit : MonoBehaviour {
         //if path is empty, end moving state
         if (path.Count == 0)
         {
-            current_state = State.PLACED;
+            //move to next state
+            fsm.NextState();
         }
         else
         {
@@ -265,7 +244,7 @@ public abstract class Unit : MonoBehaviour {
             //calculate units position on top of the target tile
             target.y = transform.position.y;
 
-            if (Vector3.Distance(transform.position, target) >= 0.05f)
+            if (Vector3.Distance(transform.position, target) >= 0.1f)
             {
                 CalculateHeading(target);
                 SetHorizontalVelocity();
@@ -291,5 +270,10 @@ public abstract class Unit : MonoBehaviour {
     {
         float damage = _damage * DEF / 100.0f;
         health -= (int)damage;
+    }
+
+    public void DisableDraggable()
+    {
+        S_draggable.enabled = false;
     }
 }

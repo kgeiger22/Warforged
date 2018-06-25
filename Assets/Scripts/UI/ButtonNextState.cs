@@ -33,6 +33,6 @@ public class ButtonNextState : MonoBehaviour {
 
     public void NextState()
     {
-        GameStateManager.G_GAMESTATEFSM.NextState();
+        BaseGame.G_GAMESTATEFSM.NextState();
     }
 }

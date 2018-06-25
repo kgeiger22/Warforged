@@ -14,6 +14,9 @@ public abstract class Ability
 
     public void FindAffectableTiles()
     {
+        //clear previous tiles
+        owner.RemoveSelectableTiles();
+
         Queue<Tile> process = new Queue<Tile>();
 
         Tile current_tile = owner.GetCurrentTile();

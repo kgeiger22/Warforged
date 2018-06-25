@@ -38,6 +38,9 @@ public static class CanvasManager {
             case Menu.TILEINFO:
                 result = GameObject.Instantiate(Resources.Load<GameObject>("Prefabs/TileInfoCanvas"));
                 break;
+            case Menu.UNITINFO:
+                result = GameObject.Instantiate(Resources.Load<GameObject>("Prefabs/UnitInfoCanvas"));
+                break;
             default:
                 break;
         }

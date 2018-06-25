@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class FSM : MonoBehaviour {
+public class FSM {
 
-    public FSM_State state { get; protected set; }
+    protected FSM_State state;
 
     public virtual void NextState()
     {
@@ -15,7 +15,7 @@ public class FSM : MonoBehaviour {
 
     public virtual void SetState(FSM_State _state)
     {
-        state.Exit();
+        if (state != null) state.Exit();
         state = _state;
         state.Enter();
     }
