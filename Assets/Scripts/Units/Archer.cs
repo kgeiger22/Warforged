@@ -6,9 +6,9 @@ public class Archer : Unit
 {
     public static int cost = 19;
 
-    protected override void Awake()
+    protected override void OnInstantiate()
     {
-        base.Awake();
+        base.OnInstantiate();
         type = Type.ARCHER;
         HP = 50;
         ATK = 85;

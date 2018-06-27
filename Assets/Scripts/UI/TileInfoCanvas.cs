@@ -27,7 +27,7 @@ public class TileInfoCanvas : MonoBehaviour {
         }
         else
         {
-            tile_type.text = "Type: " + tile.GetTileType().ToString();
+            tile_type.text = "Type: " + tile.type.ToString();
             tile_cost.text = "Cost: " + tile.movement_cost.ToString();
         }
 

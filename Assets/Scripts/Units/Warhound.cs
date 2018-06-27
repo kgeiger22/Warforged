@@ -6,9 +6,9 @@ public class Warhound : Unit
 {
     public static int cost = 17;
 
-    protected override void Awake()
+    protected override void OnInstantiate()
     {
-        base.Awake();
+        base.OnInstantiate();
         type = Type.WARHOUND;
         HP = 110;
         ATK = 50;

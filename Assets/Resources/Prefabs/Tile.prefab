@@ -56,7 +56,6 @@ GameObject:
   - component: {fileID: 33678907103500630}
   - component: {fileID: 23925700850136136}
   - component: {fileID: 65055173803624530}
-  - component: {fileID: 114978499034748932}
   m_Layer: 9
   m_Name: Tile
   m_TagString: Tile
@@ -243,20 +242,3 @@ BoxCollider:
   serializedVersion: 2
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
---- !u!114 &114978499034748932
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1873683189908642}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 22b1448faa85c404db6c40951ed16f26, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  type: 0
-  player_info: 0
-  adjacency_list: []
-  movable: 0
-  distance: 0
-  parent: {fileID: 0}

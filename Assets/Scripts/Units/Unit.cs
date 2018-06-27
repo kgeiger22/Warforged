@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [RequireComponent(typeof(Draggable))]
-public abstract class Unit : MonoBehaviour {
+public abstract class Unit : WarforgedMonoBehaviour
+{
 
     static float move_speed = 15.0f;
 
@@ -63,10 +64,10 @@ public abstract class Unit : MonoBehaviour {
     protected Vector3 velocity;
     protected Vector3 heading;
 
-    protected List<Ability> abilities = new List<Ability>();
+    public List<Ability> abilities { get; protected set; }
+    public List<Effect> effects { get; protected set; }
 
-
-    protected virtual void Awake()
+    protected override void OnInstantiate()
     {
         fsm = new UnitStateFSM(this);
         health = HP;
@@ -74,7 +75,7 @@ public abstract class Unit : MonoBehaviour {
         owner = Player.G_CURRENT_PLAYER;
     }
 
-    protected virtual void Update()
+    protected override void OnUpdate()
     {
         if (fsm.GetUnitState().type == UnitState.State_Type.MOVING)
         {
@@ -139,7 +140,7 @@ public abstract class Unit : MonoBehaviour {
 
     public Tile GetCurrentTile()
     {
-        return World.G_WORLD.GetTile(x, y);
+        return Board.G_BOARD.GetTile(x, y);
     }
 
     public void FindSelectableTiles()
@@ -180,7 +181,7 @@ public abstract class Unit : MonoBehaviour {
     public void Select()
     {
         CanvasManager.EnableCanvas(CanvasManager.Menu.UNITINFO);
-        if (BelongsToCurrentPlayer() && GameStateManager.GetGameState().type == GameState.State_Type.TURN)
+        if (BelongsToCurrentPlayer() && GetCurrentState() == GameState.State_Type.TURN)
         {
             //get unit ready to move
             FindSelectableTiles();
@@ -261,19 +262,26 @@ public abstract class Unit : MonoBehaviour {
         }
     }
 
+    public void DisableDraggable()
+    {
+        S_draggable.enabled = false;
+    }
+
+    //adds an ability to a unit's arsenal
     public void AddAbility(Ability _ability)
     {
         abilities.Add(_ability);
     }
 
-    public void DealDamage(float _damage)
+    //this is the final calculated value of damage
+    public void ReduceHealth(int _damage)
     {
-        float damage = _damage * DEF / 100.0f;
-        health -= (int)damage;
+        health -= _damage;
     }
 
-    public void DisableDraggable()
+    public void ApplyEffect(Effect _effect)
     {
-        S_draggable.enabled = false;
+        _effect.OnApply();
+        effects.Add(_effect);
     }
 }

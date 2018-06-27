@@ -6,9 +6,9 @@ public class Knight : Unit
 {
     public static int cost = 23;
 
-    protected override void Awake()
+    protected override void OnInstantiate()
     {
-        base.Awake();
+        base.OnInstantiate();
         type = Type.KNIGHT;
         HP = 150;
         ATK = 50;

@@ -8,11 +8,5 @@ public class Melee : Ability {
     {
         owner = _owner;
         range = 1;
-        amount = 1.0f;
-    }
-
-    public override void ApplyEffect(Unit target)
-    {
-        target.DealDamage(owner.ATK * amount);
     }
 }

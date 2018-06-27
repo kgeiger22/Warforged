@@ -21,8 +21,5 @@ public class UnitStateFSM : FSM {
     {
         state = new DragState(owner);
         state.Enter();
-
-        //Create all adjacency lists for tiles here
-        World.G_WORLD.InitalizeTiles();
     }
 }

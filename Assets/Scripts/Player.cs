@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Player : MonoBehaviour {
+public class Player : WarforgedMonoBehaviour {
 
     public enum Info
     {
@@ -19,12 +19,12 @@ public class Player : MonoBehaviour {
     public Unit held_unit;
 
     // Use this for initialization
-    private void Awake () {
+    protected override void OnGameInit () {
         G_PLAYERS.Add(this);
         info = (Info)G_PLAYERS.Count;
     }
 
-    private void Update()
+    protected override void OnUpdate()
     {
         if (Input.GetMouseButtonDown(1)) SelectionManager.Unselect();
     }
@@ -48,8 +48,6 @@ public class Player : MonoBehaviour {
     {
         switch (_info)
         {
-            case Info.NONE:
-                break;
             case Info.PLAYER1:
                 G_CURRENT_PLAYER = G_PLAYERS[0];
                 break;

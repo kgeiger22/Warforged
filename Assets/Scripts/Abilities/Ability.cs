@@ -7,12 +7,10 @@ public abstract class Ability
 
     public Unit owner;
     public int range;
-    public float amount;
 
     List<Tile> targettable_tiles = new List<Tile>();
 
-
-    public void FindAffectableTiles()
+    public virtual void FindTargettableTiles()
     {
         //clear previous tiles
         owner.RemoveSelectableTiles();
@@ -26,7 +24,7 @@ public abstract class Ability
         {
             current_tile = process.Dequeue();
             if (current_tile.targettable || current_tile.distance > range) continue;
-            if (IsAffectableTile(current_tile))
+            if (IsTargettableTile(current_tile))
             {
                 targettable_tiles.Add(current_tile);
                 current_tile.targettable = true;
@@ -40,7 +38,7 @@ public abstract class Ability
         }
     }
 
-    public void RemoveAffectableTiles()
+    public void RemoveTargettableTiles()
     {
         foreach (Tile tile in targettable_tiles)
         {
@@ -49,10 +47,32 @@ public abstract class Ability
         targettable_tiles.Clear();
     }
 
-    protected virtual bool IsAffectableTile(Tile tile)
+    //override to change which tiles could potentially be targetted regardless of unit placement
+    protected virtual bool IsTargettableTile(Tile tile)
     {
         return true;
     }
 
-    public abstract void ApplyEffect(Unit target);
+    //override to change valid targets
+    protected virtual bool IsValidTile(Tile tile)
+    {
+        return (!tile.unit.BelongsToCurrentPlayer());
+    }
+
+    public virtual void Resolve(Unit target)
+    {
+
+    }
+
+    protected virtual void ApplyEffect(Unit target, Effect effect)
+    {
+        target.ApplyEffect(effect);
+    }
+
+    //damage paramater is AFTER attack calculation but BEFORE defense mitigation
+    //override for attacks that calculate damage differently
+    protected virtual void DealDamage(Unit target, float damage)
+    {
+
+    }
 }

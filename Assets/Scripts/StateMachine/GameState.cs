@@ -6,7 +6,7 @@ public class GameState : FSM_State {
 
     public enum State_Type
     {
-        BEGIN,
+        LOAD,
         BUILD,
         TURN,
         END,   
@@ -16,7 +16,17 @@ public class GameState : FSM_State {
     public State_Type type { get; protected set; }
 }
 
-public class BuildState : GameState
+public class LoadState : GameState
+{
+    public override void Enter()
+    {
+        type = State_Type.LOAD;
+        next = new BuildState(Player.Info.PLAYER1);
+
+    }
+}
+
+    public class BuildState : GameState
 {
     public BuildState(Player.Info _info)
     {
@@ -40,6 +50,7 @@ public class BuildState : GameState
                 next = this;
                 break;
         }
+        SelectionManager.Unselect();
     }
     public override void Exit()
     {
@@ -72,6 +83,12 @@ public class TurnState : GameState
                 next = this;
                 break;
         }
-        SelectionManager.Reselect();
+        SelectionManager.Unselect();
+        EventHandler.StartTurn();
+    }
+
+    public override void Exit()
+    {
+        EventHandler.EndTurn();
     }
 }

@@ -3,26 +3,26 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEditor;
 
-[ExecuteInEditMode]
-public class Tile : MonoBehaviour {
-
-
+[RequireComponent(typeof(TileEditor))]
+public abstract class Tile : WarforgedMonoBehaviour
+{
     public enum Tile_Type
     {
         FLATLAND,
         FOREST,
         MOUNTAIN,
     }
-    [SerializeField, HideInInspector]
-    Tile_Type type;
-    public Tile_Type GetTileType() { return type; }
 
-    [SerializeField, HideInInspector]
-    Player.Info owner;
-
-    public List<Tile> adjacency_list { get; protected set; }
-    
+    public Tile_Type type { get; protected set; }
     public int movement_cost { get; protected set; }
+
+    public Unit unit { get; protected set; }
+    public Player.Info owner { get; protected set; }
+    public void SetOwner(Player.Info _info)
+    {
+        owner = _info;
+    }
+
     public int x { get; protected set; }
     public int y { get; protected set; }
     public void SetCoordinates(int _x, int _y)
@@ -31,11 +31,8 @@ public class Tile : MonoBehaviour {
         y = _y;
     }
 
-    public Unit unit { get; protected set; }
 
-    Renderer thisRenderer;
-    GameObject highlight;
-    Renderer highlight_renderer;
+    public List<Tile> adjacency_list { get; protected set; }
     bool selected = false;
     bool hovered = false;
     [HideInInspector]
@@ -43,53 +40,31 @@ public class Tile : MonoBehaviour {
     [HideInInspector]
     public bool targettable;
     [HideInInspector]
+    public bool valid;
+    [HideInInspector]
     public int distance;
     [HideInInspector]
     public Tile parent;
 
-    public void Init()
+    protected override void OnGameInit()
     {
-        UpdateProperties();
-        CreateAdjacencyList();
-    }
-
-    protected virtual void Awake()
-    {
-        Reset();
         adjacency_list = new List<Tile>();
-        thisRenderer = GetComponent<Renderer>();
-        GameObject go;
-        if (!transform.Find("Plane(Clone)"))
-        {
-            go = Instantiate(Resources.Load<GameObject>("Prefabs/Plane"));
-            go.transform.parent = transform;
-            go.transform.position += transform.position;
-        }
-        if (!transform.Find("Highlight(Clone)"))
-        {
-            go = Instantiate(Resources.Load<GameObject>("Prefabs/Highlight"));
-            go.transform.parent = transform;
-            go.transform.position += transform.position;
-        }
+        CreateAdjacencyList();
+        Reset();
     }
 
-    protected virtual void Start()
-    {
-        highlight = transform.Find("Highlight(Clone)").gameObject;
-        highlight_renderer = highlight.GetComponent<Renderer>();
-    }
-
-    protected virtual void Update()
+    protected override void OnUpdate()
     {
         Material mat;
         if (selected) mat = Resources.Load<Material>("Materials/Selectable");
         else if (hovered) mat = Resources.Load<Material>("Materials/Hoverable");
         else if (movable) mat = Resources.Load<Material>("Materials/Movable");
+        else if (valid) mat = Resources.Load<Material>("Materials/Valid");
         else if (targettable) mat = Resources.Load<Material>("Materials/Targettable");
-        else if (owner == Player.Info.PLAYER1) mat = Resources.Load<Material>("Materials/PurpleSelectable");
-        else if (owner == Player.Info.PLAYER2) mat = Resources.Load<Material>("Materials/OrangeSelectable");
+        else if (GetCurrentState() == GameState.State_Type.BUILD && owner == Player.Info.PLAYER1) mat = Resources.Load<Material>("Materials/PurpleSelectable");
+        else if (GetCurrentState() == GameState.State_Type.BUILD && owner == Player.Info.PLAYER2) mat = Resources.Load<Material>("Materials/OrangeSelectable");
         else mat = Resources.Load<Material>("Materials/Highlight");
-        highlight_renderer.material = mat;
+        GetHighlightRenderer().material = mat;
     }
 
     public void Select()
@@ -171,44 +146,31 @@ public class Tile : MonoBehaviour {
         unit = null;
     }
 
-    public void SetType(Tile_Type _type)
-    {
-        //Debug.Log("Setting type " + _type);
-        //GetComponent<TileData>().Delete();
-        //TileData data = null;
-        //switch (_type)
-        //{
-        //    case Tile_Type.FLATLAND:
-        //        data = gameObject.AddComponent<FlatlandData>();
-        //        break;
-        //    case Tile_Type.FOREST:
-        //        data = gameObject.AddComponent<ForestData>();
-        //        break;
-        //    case Tile_Type.MOUNTAIN:
-        //        data = gameObject.AddComponent<MountainData>();
-        //        break;
-        //}
-        //data.Init();
-        //type = _type;
-    }
 
-    public void UpdateProperties()
+    public void ChangeTile(Tile_Type _type, Player.Info _info)
     {
-        switch (type)
+        Tile new_tile = null;
+        switch (_type)
         {
             case Tile_Type.FLATLAND:
-                movement_cost = 1;
-                thisRenderer.material = Resources.Load<Material>("Materials/Flatland");
+                new_tile = Instantiate(Resources.Load<Tile>("Prefabs/Flatland"));
                 break;
             case Tile_Type.FOREST:
-                movement_cost = 2;
-                thisRenderer.material = Resources.Load<Material>("Materials/Forest");
+                new_tile = Instantiate(Resources.Load<Tile>("Prefabs/Forest"));
                 break;
             case Tile_Type.MOUNTAIN:
-                movement_cost = 3;
-                thisRenderer.material = Resources.Load<Material>("Materials/Mountain");
+                new_tile = Instantiate(Resources.Load<Tile>("Prefabs/Mountain"));
+                break;
+            default:
                 break;
         }
+        if (!new_tile) return;
+        new_tile.name = name;
+        new_tile.transform.parent = transform.parent;
+        new_tile.transform.position = transform.position;
+        new_tile.transform.SetSiblingIndex(transform.GetSiblingIndex());
+        new_tile.SetOwner(_info);
+        new_tile.SetPlayerHighlight();
     }
 
     public void CreateAdjacencyList()
@@ -216,60 +178,44 @@ public class Tile : MonoBehaviour {
         //fill adjacency list
         Tile t;
         //left tile
-        t = World.G_WORLD.GetTile(x - 1, y);
+        t = Board.G_BOARD.GetTile(x - 1, y);
         if (t) adjacency_list.Add(t);
         //right tile
-        t = World.G_WORLD.GetTile(x + 1, y);
+        t = Board.G_BOARD.GetTile(x + 1, y);
         if (t) adjacency_list.Add(t);
         //down tile
-        t = World.G_WORLD.GetTile(x, y - 1);
+        t = Board.G_BOARD.GetTile(x, y - 1);
         if (t) adjacency_list.Add(t);
         //up tile
-        t = World.G_WORLD.GetTile(x, y + 1);
+        t = Board.G_BOARD.GetTile(x, y + 1);
         if (t) adjacency_list.Add(t);
     }
 
     public void Reset()
     {
         movable = false;
+        valid = false;
         targettable = false;
         parent = null;
         distance = int.MaxValue;
     }
+
+    public Renderer GetRenderer()
+    {
+        return GetComponent<Renderer>();
+    }
+
+    public Renderer GetHighlightRenderer()
+    {
+        Transform h = transform.Find("Highlight");
+        if (h) return h.GetComponent<Renderer>();
+        else return null;
+    }
+
+    public void SetPlayerHighlight()
+    {
+        if (owner == Player.Info.PLAYER1) GetHighlightRenderer().material = Resources.Load<Material>("Materials/PurpleSelectable");
+        else if (owner == Player.Info.PLAYER2) GetHighlightRenderer().material = Resources.Load<Material>("Materials/OrangeSelectable");
+    }
 }
 
-[CustomEditor(typeof(Tile)), CanEditMultipleObjects]
-public class TileEditor : Editor
-{
-    SerializedProperty s_type;
-    SerializedProperty s_owner;
-
-    void OnEnable()
-    {
-        s_type = serializedObject.FindProperty("type");
-        s_owner = serializedObject.FindProperty("owner");
-    }
-
-    public override void OnInspectorGUI()
-    {
-        base.OnInspectorGUI();
-        EditorGUI.BeginChangeCheck();
-        serializedObject.UpdateIfRequiredOrScript();
-
-        EditorGUILayout.PropertyField(s_type, new GUIContent("Tile Type"));
-        EditorGUILayout.PropertyField(s_owner, new GUIContent("Owner"));
-
-        //EditorGUILayout.EnumPopup(new GUIContent("Tile Type"), (Tile.Tile_Type)s_type.enumValueIndex);
-
-        serializedObject.ApplyModifiedProperties();
-
-        if (EditorGUI.EndChangeCheck())
-        {
-            foreach (Object tar in targets)
-            {
-                ((Tile)tar).UpdateProperties();
-            }
-            
-        }
-    }
-}   

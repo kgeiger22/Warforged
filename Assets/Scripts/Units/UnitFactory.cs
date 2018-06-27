@@ -23,12 +23,12 @@ public static class UnitFactory {
             default:
                 return;
         }
-        //if a tile is passed in, place the unit immediately
-        if (_tile)
-        {
-            SelectionManager.Select(_tile);
-            unit.Place();
-        }
+        ////if a tile is passed in, place the unit immediately
+        //if (_tile)
+        //{
+        //    SelectionManager.Select(_tile);
+        //    unit.Place();
+        //}
 
         //turn the character the correct direction
         if (Player.G_CURRENT_PLAYER.info == Player.Info.PLAYER1) unit.transform.Rotate(0, 90, 0);

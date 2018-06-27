@@ -22,7 +22,7 @@ GameObject:
   - component: {fileID: 33701742774823450}
   - component: {fileID: 23152290458226986}
   m_Layer: 9
-  m_Name: Plane(Clone)
+  m_Name: Plane
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -39,7 +39,8 @@ GameObject:
   - component: {fileID: 33603097116144182}
   - component: {fileID: 23666446099538384}
   - component: {fileID: 65129384238464388}
-  - component: {fileID: 114305663033302654}
+  - component: {fileID: 114112377040655604}
+  - component: {fileID: 114095262613651300}
   m_Layer: 9
   m_Name: Forest
   m_TagString: Tile
@@ -58,7 +59,7 @@ GameObject:
   - component: {fileID: 33981766997828654}
   - component: {fileID: 23928173971703340}
   m_Layer: 0
-  m_Name: Highlight(Clone)
+  m_Name: Highlight
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -243,7 +244,7 @@ BoxCollider:
   serializedVersion: 2
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
---- !u!114 &114305663033302654
+--- !u!114 &114095262613651300
 MonoBehaviour:
   m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
@@ -251,11 +252,25 @@ MonoBehaviour:
   m_GameObject: {fileID: 1296331026549372}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 273cb1f580f318845b2848feb56a1c6e, type: 3}
+  m_Script: {fileID: 11500000, guid: 6b235e37190493f4abe940ff7525cdde, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  player_info: 0
-  adjacency_list: []
   movable: 0
-  distance: 0
+  targettable: 0
+  valid: 0
+  distance: 2147483647
   parent: {fileID: 0}
+--- !u!114 &114112377040655604
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1296331026549372}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5ec88344192a6f944a1702f4ddb0ddde, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  editor_type: 0
+  editor_owner: 0
+  ready_to_delete: 0
