@@ -4,7 +4,7 @@ using UnityEngine;
 
 public static class SelectionManager {
 
-    public static Tile selected = null;
+    private static Tile selected = null;
 
     public static void Select(Tile _select)
     {
@@ -35,5 +35,16 @@ public static class SelectionManager {
             selected.Unselect();
             selected = null;
         }
+    }
+
+    public static Tile GetSelectedTile()
+    {
+        return selected;
+    }
+
+    public static Unit GetSelectedUnit()
+    {
+        if (selected) return selected.unit;
+        else return null;
     }
 }

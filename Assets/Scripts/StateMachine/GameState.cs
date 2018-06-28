@@ -10,6 +10,7 @@ public class GameState : FSM_State {
         BUILD,
         TURN,
         END,   
+        ROUND,
     }
 
     public Player.Info player_info { get; protected set; }
@@ -43,7 +44,7 @@ public class LoadState : GameState
                 next = new BuildState(Player.Info.PLAYER2);
                 break;
             case Player.Info.PLAYER2:
-                next = new TurnState(Player.Info.PLAYER1);
+                next = new RoundState();
                 break;
             default:
                 Debug.Log("ERROR: No player found for TurnState");
@@ -90,5 +91,32 @@ public class TurnState : GameState
     public override void Exit()
     {
         EventHandler.EndTurn();
+    }
+}
+
+public class RoundState : GameState
+{
+    public override void Enter()
+    {
+        type = State_Type.ROUND;
+        int speed_player1 = Player.CalculateSpeed(Player.Info.PLAYER1);
+        int speed_player2 = Player.CalculateSpeed(Player.Info.PLAYER2);
+        if (speed_player1 > speed_player2)
+        {
+            next = new TurnState(Player.Info.PLAYER1);
+        }
+        else if (speed_player2 > speed_player1)
+        {
+            next = new TurnState(Player.Info.PLAYER2);
+        }
+        else
+        {
+            //decide randomly
+            float rng = Random.value;
+            if (rng < 0.5f) next = new TurnState(Player.Info.PLAYER1);
+            else next = new TurnState(Player.Info.PLAYER2);
+        }
+        EventHandler.StartRound();
+        BaseGame.G_GAMESTATEFSM.NextState();
     }
 }

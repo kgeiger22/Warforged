@@ -16,12 +16,14 @@ public class Player : WarforgedMonoBehaviour {
 
     public int money;
     public Info info { get; protected set; }
-    public Unit held_unit;
+    public Unit held_unit { get; protected set; }
+    public List<Unit> units { get; protected set; }
 
     // Use this for initialization
     protected override void OnGameInit () {
         G_PLAYERS.Add(this);
         info = (Info)G_PLAYERS.Count;
+        units = new List<Unit>();
     }
 
     protected override void OnUpdate()
@@ -63,14 +65,30 @@ public class Player : WarforgedMonoBehaviour {
     {
         if (held_unit)
         {
-            Destroy(held_unit.gameObject);
+            held_unit.Delete();
         }
         held_unit = _unit;
     }
 
+
     public void DropUnit()
     {
         HoldUnit(null);
+    }
+
+    public void PlaceUnit()
+    {
+        held_unit = null;
+    }
+
+    public void RemoveUnit(Unit _unit)
+    {
+        units.Remove(_unit);
+    }
+
+    public void AddUnit(Unit _unit)
+    {
+        units.Add(_unit);
     }
 
     public List<Unit> GetAllUnits()
@@ -91,5 +109,28 @@ public class Player : WarforgedMonoBehaviour {
     public static bool IsPlayerTurn(Info _info)
     {
         return (_info == G_CURRENT_PLAYER.info);
+    }
+
+    public static int CalculateSpeed(Info _info)
+    {
+        switch (_info)
+        {
+            case Info.PLAYER1:
+                return G_PLAYERS[0].CalculateSpeed();
+            case Info.PLAYER2:
+                return G_PLAYERS[1].CalculateSpeed();
+            default:
+                return 0;
+        }
+    }
+
+    public int CalculateSpeed()
+    {
+        int total_speed = 0;
+        foreach(Unit _unit in units)
+        {
+            total_speed += _unit.SPD;
+        }
+        return total_speed;
     }
 }

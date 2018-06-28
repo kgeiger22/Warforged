@@ -10,6 +10,7 @@ public class FSM {
     {
         state.Exit();
         state = state.next;
+        if (state == null) Debug.Log("ERROR: Next state is null");
         state.Enter();
     }
 

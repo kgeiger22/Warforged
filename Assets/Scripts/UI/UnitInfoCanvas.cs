@@ -6,18 +6,21 @@ using UnityEngine.UI;
 public class UnitInfoCanvas : MonoBehaviour {
 
     Text unit_type;
+    Text unit_hp;
+    Text unit_moves;
+
 
     private void Awake()
     {
         unit_type = transform.Find("InfoHolder").Find("UnitType").GetComponent<Text>();
+        unit_hp = transform.Find("InfoHolder").Find("UnitHP").GetComponent<Text>();
+        unit_moves = transform.Find("InfoHolder").Find("UnitMoves").GetComponent<Text>();
+
     }
 
-    private void OnEnable()
+    private void Update()
     {
-        if (SelectionManager.selected)
-        {
-            UpdateInfo(SelectionManager.selected.unit);
-        }
+        UpdateInfo(SelectionManager.GetSelectedUnit());
     }
 
     public void UpdateInfo(Unit unit)
@@ -29,6 +32,9 @@ public class UnitInfoCanvas : MonoBehaviour {
         else
         {
             unit_type.text = "Type: " + unit.type.ToString();
+            unit_hp.text = "HP: " + unit.health + "/" + unit.HP;
+            unit_moves.text = "Moves: " + unit.moves_remaining + "/" + unit.SPD;
+
         }
 
     }

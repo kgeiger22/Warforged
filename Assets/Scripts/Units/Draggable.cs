@@ -31,7 +31,7 @@ public class Draggable : WarforgedMonoBehaviour
     {
         if (Input.GetMouseButtonDown(1))
         {
-            Destroy(gameObject);
+            Delete();
         }
     }
 
@@ -40,7 +40,8 @@ public class Draggable : WarforgedMonoBehaviour
         if (Player.G_CURRENT_PLAYER.money - Unit.GetCost(S_unit.type) < 0) return false;
         if (!HoverManager.hovered || !HoverManager.hovered.IsWalkable() || !HoverManager.hovered.BelongsToCurrentPlayer())
         {
-            if (!SelectionManager.selected || !SelectionManager.selected.IsWalkable() || !SelectionManager.selected.BelongsToCurrentPlayer()) 
+            Tile tile = SelectionManager.GetSelectedTile();
+            if (!tile || !tile.IsWalkable() || !tile.BelongsToCurrentPlayer()) 
             {
                 return false;
             }

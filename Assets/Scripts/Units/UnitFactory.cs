@@ -23,16 +23,24 @@ public static class UnitFactory {
             default:
                 return;
         }
+
+        switch (Player.G_CURRENT_PLAYER.info)
+        {
+            case Player.Info.PLAYER1:
+                unit.transform.Rotate(0, 90, 0);
+                break;
+            case Player.Info.PLAYER2:
+                unit.transform.Rotate(0, -90, 0);
+                break;
+            default:
+                break;
+        }
         ////if a tile is passed in, place the unit immediately
         //if (_tile)
         //{
         //    SelectionManager.Select(_tile);
         //    unit.Place();
         //}
-
-        //turn the character the correct direction
-        if (Player.G_CURRENT_PLAYER.info == Player.Info.PLAYER1) unit.transform.Rotate(0, 90, 0);
-        else if (Player.G_CURRENT_PLAYER.info == Player.Info.PLAYER2) unit.transform.Rotate(0, -90, 0);
 
         //replace the currently held unit
         Player.G_CURRENT_PLAYER.HoldUnit(unit);

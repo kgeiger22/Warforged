@@ -13,7 +13,7 @@ public static class HoverManager {
             if (ReferenceEquals(hovered, _hover)) return;
             else Unhover();
         }
-        if (!ReferenceEquals(_hover, SelectionManager.selected)) hovered = _hover;
+        if (!ReferenceEquals(_hover, SelectionManager.GetSelectedTile())) hovered = _hover;
         if (hovered) hovered.Hover();
     }
 

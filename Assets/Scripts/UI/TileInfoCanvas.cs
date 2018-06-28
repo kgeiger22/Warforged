@@ -16,7 +16,7 @@ public class TileInfoCanvas : MonoBehaviour {
 
     private void OnEnable()
     {
-        UpdateInfo(SelectionManager.selected);
+        UpdateInfo(SelectionManager.GetSelectedTile());
     }
 
     public void UpdateInfo (Tile tile) {

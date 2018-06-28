@@ -13,6 +13,7 @@ public abstract class Tile : WarforgedMonoBehaviour
         MOUNTAIN,
     }
 
+    [SerializeField, HideInInspector]
     public Tile_Type type { get; protected set; }
     public int movement_cost { get; protected set; }
 
@@ -51,6 +52,8 @@ public abstract class Tile : WarforgedMonoBehaviour
         adjacency_list = new List<Tile>();
         CreateAdjacencyList();
         Reset();
+        owner = GetComponent<TileEditor>().editor_owner;
+        GetComponent<TileEditor>().enabled = false;
     }
 
     protected override void OnUpdate()
@@ -96,9 +99,9 @@ public abstract class Tile : WarforgedMonoBehaviour
         if (!EventSystem.current.IsPointerOverGameObject())
         {
             //check if moving to tile
-            if (movable && SelectionManager.selected.unit && SelectionManager.selected.unit.BelongsToCurrentPlayer())
+            if (movable && SelectionManager.GetSelectedUnit() && SelectionManager.GetSelectedUnit().BelongsToCurrentPlayer())
             {
-                SelectionManager.selected.unit.MoveTo(this);
+                SelectionManager.GetSelectedUnit().MoveTo(this);
             }
 
             SelectionManager.Select(this);
@@ -115,14 +118,6 @@ public abstract class Tile : WarforgedMonoBehaviour
     public void OnMouseExit()
     {
         HoverManager.Unhover();
-    }
-
-    public void DeleteUnit()
-    {
-        if (!unit || !ReferenceEquals(Player.G_CURRENT_PLAYER, unit.owner)) return;
-        unit.owner.money += Unit.GetCost(unit.type);
-        Destroy(unit.gameObject);
-        unit = null;
     }
 
     public bool BelongsToCurrentPlayer()
@@ -171,6 +166,9 @@ public abstract class Tile : WarforgedMonoBehaviour
         new_tile.transform.SetSiblingIndex(transform.GetSiblingIndex());
         new_tile.SetOwner(_info);
         new_tile.SetPlayerHighlight();
+        new_tile.GetComponent<TileEditor>().editor_owner = _info;
+        new_tile.GetComponent<TileEditor>().editor_type = _type;
+
     }
 
     public void CreateAdjacencyList()

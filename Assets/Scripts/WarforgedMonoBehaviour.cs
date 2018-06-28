@@ -20,6 +20,7 @@ public class WarforgedMonoBehaviour : MonoBehaviour {
     protected void Start()
     {
         OnInstantiate();
+        OnPostInstantiate();
     }
 
     protected void Update()
@@ -39,10 +40,29 @@ public class WarforgedMonoBehaviour : MonoBehaviour {
     protected virtual void OnRoundStart() { }
     protected virtual void OnRoundEnd() { }
     protected virtual void OnInstantiate() { }
+    protected virtual void OnPostInstantiate() { }
     protected virtual void OnUpdate() { }
+
+    public virtual void Delete()
+    {
+        Destroy(gameObject);
+    }
 
     protected GameState.State_Type GetCurrentState()
     {
         return GameStateManager.GetGameState().type;
+    }
+
+    protected Player GetPlayer(Player.Info _info)
+    {
+        switch (_info)
+        {
+            case Player.Info.PLAYER1:
+                return Player.G_PLAYERS[0];
+            case Player.Info.PLAYER2:
+                return Player.G_PLAYERS[1];
+            default:
+                return null;
+        }
     }
 }

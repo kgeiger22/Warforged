@@ -17,6 +17,21 @@ public abstract class Unit : WarforgedMonoBehaviour
         WARHOUND,
     }
 
+    public static int GetCost(Type _type)
+    {
+        switch (_type)
+        {
+            case Type.KNIGHT:
+                return Knight.cost;
+            case Type.ARCHER:
+                return Archer.cost;
+            case Type.WARHOUND:
+                return Warhound.cost;
+            default:
+                return -1;
+        }
+    }
+
     UnitStateFSM fsm;
 
     [SerializeField]
@@ -42,22 +57,9 @@ public abstract class Unit : WarforgedMonoBehaviour
         y = _y;
     }
 
-    public int health;
+    public int health { get; protected set; }
     public int moves_remaining { get; protected set; }
-    public static int GetCost(Type _type)
-    {
-        switch (_type)
-        {
-            case Type.KNIGHT:
-                return Knight.cost;
-            case Type.ARCHER:
-                return Archer.cost;
-            case Type.WARHOUND:
-                return Warhound.cost;
-            default:
-                return -1;
-        }
-    }
+
 
     List<Tile> moveable_tiles = new List<Tile>();
     Stack<Tile> path = new Stack<Tile>();
@@ -70,9 +72,13 @@ public abstract class Unit : WarforgedMonoBehaviour
     protected override void OnInstantiate()
     {
         fsm = new UnitStateFSM(this);
-        health = HP;
         S_draggable = GetComponent<Draggable>();
         owner = Player.G_CURRENT_PLAYER;
+    }
+
+    protected override void OnPostInstantiate()
+    {
+        health = HP;
     }
 
     protected override void OnUpdate()
@@ -83,29 +89,34 @@ public abstract class Unit : WarforgedMonoBehaviour
         }
     }
 
+    protected override void OnRoundStart()
+    {
+        moves_remaining = SPD;
+    }
+
     public void Place()
     {
         //apply correct material
-        if (Player.G_CURRENT_PLAYER.info == Player.Info.PLAYER1)
+        if (owner.info == Player.Info.PLAYER1)
         {
             SetMaterials(player1_material);
         }
-        else if (Player.G_CURRENT_PLAYER.info == Player.Info.PLAYER2)
+        else if (owner.info == Player.Info.PLAYER2)
         {
             SetMaterials(player2_material);
         }
         //move unit to center of tile
-        transform.position = SelectionManager.selected.transform.position + new Vector3(0, 0.5f, 0);
+        transform.position = SelectionManager.GetSelectedTile().transform.position + new Vector3(0, 0.5f, 0);
         //tell the tile that it owns this unit
-        SelectionManager.selected.Place(this);
+        SelectionManager.GetSelectedTile().Place(this);
         //reset player held value
-        Player.G_CURRENT_PLAYER.held_unit = null;
+        owner.PlaceUnit();
         //switch unit state upon placement
         fsm.NextState();
         //apply monetary cost to player
-        Player.G_CURRENT_PLAYER.money -= GetCost(type);
-        //drop the unit from player
-        Player.G_CURRENT_PLAYER.DropUnit();
+        owner.money -= GetCost(type);
+        //add unit to player unit pool
+        owner.AddUnit(this);
         //generate another draggable, remove this line for single-placement
         UnitFactory.GenerateUnit(type);
         //Update selection
@@ -159,7 +170,7 @@ public abstract class Unit : WarforgedMonoBehaviour
             foreach (Tile next_tile in current_tile.adjacency_list)
             {
                 int next_move_cost = next_tile.movement_cost + current_tile.distance;
-                if (next_tile.IsWalkable() && next_move_cost < next_tile.distance && next_move_cost <= SPD)
+                if (next_tile.IsWalkable() && next_move_cost < next_tile.distance && next_move_cost <= moves_remaining)
                 {
                     next_tile.parent = current_tile;
                     next_tile.distance = next_move_cost;
@@ -194,6 +205,13 @@ public abstract class Unit : WarforgedMonoBehaviour
         RemoveSelectableTiles();
     }
 
+    public override void Delete()
+    {
+        Unselect();
+        if (owner) owner.RemoveUnit(this);
+        Destroy(gameObject);
+    }
+
     public bool BelongsToCurrentPlayer()
     {
         return owner.info == Player.G_CURRENT_PLAYER.info;
@@ -201,6 +219,7 @@ public abstract class Unit : WarforgedMonoBehaviour
 
     public void MoveTo(Tile tile)
     {
+        moves_remaining -= tile.distance;
         GetCurrentTile().Unplace();
         tile.Place(this);
         //build path

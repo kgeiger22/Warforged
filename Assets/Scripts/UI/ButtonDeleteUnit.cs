@@ -14,12 +14,12 @@ public class ButtonDeleteUnit : MonoBehaviour {
 
     private void Update()
     {
-        if (SelectionManager.selected && SelectionManager.selected.unit && ReferenceEquals(SelectionManager.selected.unit.owner, Player.G_CURRENT_PLAYER)) S_button.interactable = true;
+        if (SelectionManager.GetSelectedUnit() && ReferenceEquals(SelectionManager.GetSelectedUnit().owner, Player.G_CURRENT_PLAYER)) S_button.interactable = true;
         else S_button.interactable = false;
     }
 
     public void DeleteUnit()
     {
-        SelectionManager.selected.DeleteUnit();
+        SelectionManager.GetSelectedUnit().Delete();
     }
 }
