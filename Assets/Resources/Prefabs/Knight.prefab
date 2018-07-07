@@ -53,7 +53,6 @@ GameObject:
   serializedVersion: 5
   m_Component:
   - component: {fileID: 4952879442359384}
-  - component: {fileID: 114435416741889254}
   - component: {fileID: 114421581954172110}
   m_Layer: 0
   m_Name: Knight
@@ -204,15 +203,3 @@ MonoBehaviour:
   type: 0
   player1_material: {fileID: 2100000, guid: 7da8098b40e0fc14eb7adb5239f1f6fc, type: 2}
   player2_material: {fileID: 2100000, guid: 2aa8201f0bca05a4f847c8afa68ad32b, type: 2}
-  health: 0
---- !u!114 &114435416741889254
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1669912057817344}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d6dbcb2afc0ae2a4a8db91947786bb05, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 

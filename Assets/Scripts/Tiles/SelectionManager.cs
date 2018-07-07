@@ -10,6 +10,12 @@ public static class SelectionManager {
     {
         if (selected)
         {
+            //double click
+            if (selected == _select)
+            {
+                Camera.main.GetComponent<MainCamera>().MoveToTile(selected);
+                return;
+            }
             Unselect();
         }
         selected = _select;
@@ -24,7 +30,9 @@ public static class SelectionManager {
     {
         if (selected)
         {
-            Select(selected);
+            Tile t = selected;
+            Unselect();
+            Select(t);
         }
     }
 

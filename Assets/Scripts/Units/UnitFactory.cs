@@ -4,10 +4,8 @@ using UnityEngine;
 
 public static class UnitFactory {
 
-    public static void GenerateUnit(Unit.Type _type, Tile _tile)
+    public static Unit GenerateUnit(Unit.Type _type, Player.Info _info)
     {
-        if (Player.G_CURRENT_PLAYER.money < Unit.GetCost(_type)) return; //only generate unit if player has sufficient funds
-
         Unit unit;
         switch (_type)
         {
@@ -21,10 +19,11 @@ public static class UnitFactory {
                 unit = GameObject.Instantiate(Resources.Load<Unit>("Prefabs/Warhound"));
                 break;
             default:
-                return;
+                Debug.Log("ERROR: Unit type not found");
+                return null;
         }
 
-        switch (Player.G_CURRENT_PLAYER.info)
+        switch (_info)
         {
             case Player.Info.PLAYER1:
                 unit.transform.Rotate(0, 90, 0);
@@ -33,21 +32,28 @@ public static class UnitFactory {
                 unit.transform.Rotate(0, -90, 0);
                 break;
             default:
+                Debug.Log("ERROR: Unit owner unassigned at generation");
                 break;
         }
-        ////if a tile is passed in, place the unit immediately
-        //if (_tile)
-        //{
-        //    SelectionManager.Select(_tile);
-        //    unit.Place();
-        //}
+        unit.SetOwner(_info);
+        unit.InitializeVariables();
 
-        //replace the currently held unit
-        Player.G_CURRENT_PLAYER.HoldUnit(unit);
+        return unit;
     }
 
-    public static void GenerateUnit(Unit.Type _type)
-    {
-        GenerateUnit(_type, null);
-    }
+    //public static Unit GenerateDraggableUnit(Unit.Type _type)
+    //{
+    //    //draggable units always belong to the current player
+    //    Unit unit = GenerateUnit(_type, Player.G_CURRENT_PLAYER.info);
+    //    unit.gameObject.AddComponent<Draggable>();
+    //    return unit;
+    //}
+    //
+    //public static Unit GenerateDraggableUnit(Unit.Type _type, Player.Info _info)
+    //{
+    //    //draggable units always belong to player
+    //    Unit unit = GenerateUnit(_type, _info);
+    //    unit.gameObject.AddComponent<Draggable>();
+    //    return unit;
+    //}
 }

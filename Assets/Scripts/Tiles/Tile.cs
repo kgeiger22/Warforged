@@ -6,6 +6,8 @@ using UnityEditor;
 [RequireComponent(typeof(TileEditor))]
 public abstract class Tile : WarforgedMonoBehaviour
 {
+    public static readonly float width = 4.0f;
+
     public enum Tile_Type
     {
         FLATLAND,
@@ -47,8 +49,33 @@ public abstract class Tile : WarforgedMonoBehaviour
     [HideInInspector]
     public Tile parent;
 
+    void InitializeMaterials()
+    {
+        if (material_selectable == null)
+        {
+            material_selectable = Resources.Load<Material>("Materials/Selectable");
+            materrial_hoverable = Resources.Load<Material>("Materials/Hoverable");
+            materrial_movable = Resources.Load<Material>("Materials/Movable");
+            material_valid = Resources.Load<Material>("Materials/Valid");
+            material_targettable = Resources.Load<Material>("Materials/Targettable");
+            material_player1 = Resources.Load<Material>("Materials/PurpleSelectable");
+            material_player2 = Resources.Load<Material>("Materials/OrangeSelectable");
+            material_highlight = Resources.Load<Material>("Materials/Highlight");
+        }
+    }
+    static Material material_selectable;
+    static Material materrial_hoverable;
+    static Material materrial_movable;
+    static Material material_valid;
+    static Material material_targettable;
+    static Material material_player1;
+    static Material material_player2;
+    static Material material_highlight;
+
+
     protected override void OnGameInit()
     {
+        InitializeMaterials();
         adjacency_list = new List<Tile>();
         CreateAdjacencyList();
         Reset();
@@ -59,14 +86,14 @@ public abstract class Tile : WarforgedMonoBehaviour
     protected override void OnUpdate()
     {
         Material mat;
-        if (selected) mat = Resources.Load<Material>("Materials/Selectable");
-        else if (hovered) mat = Resources.Load<Material>("Materials/Hoverable");
-        else if (movable) mat = Resources.Load<Material>("Materials/Movable");
-        else if (valid) mat = Resources.Load<Material>("Materials/Valid");
-        else if (targettable) mat = Resources.Load<Material>("Materials/Targettable");
-        else if (GetCurrentState() == GameState.State_Type.BUILD && owner == Player.Info.PLAYER1) mat = Resources.Load<Material>("Materials/PurpleSelectable");
-        else if (GetCurrentState() == GameState.State_Type.BUILD && owner == Player.Info.PLAYER2) mat = Resources.Load<Material>("Materials/OrangeSelectable");
-        else mat = Resources.Load<Material>("Materials/Highlight");
+        if (valid) mat = material_valid;
+        else if (selected) mat = material_selectable;
+        else if (hovered) mat = materrial_hoverable;
+        else if (movable) mat = materrial_movable;
+        else if (targettable) mat = material_targettable;
+        else if (GetGameState() == GameState.State_Type.BUILD && owner == Player.Info.PLAYER1) mat = material_player1;
+        else if (GetGameState() == GameState.State_Type.BUILD && owner == Player.Info.PLAYER2) mat = material_player2;
+        else mat = material_highlight;
         GetHighlightRenderer().material = mat;
     }
 
@@ -99,13 +126,19 @@ public abstract class Tile : WarforgedMonoBehaviour
         if (!EventSystem.current.IsPointerOverGameObject())
         {
             //check if moving to tile
-            if (movable && SelectionManager.GetSelectedUnit() && SelectionManager.GetSelectedUnit().BelongsToCurrentPlayer())
+            Unit selected_unit = SelectionManager.GetSelectedUnit();
+            if (movable && selected_unit && selected_unit.BelongsToCurrentPlayer())
             {
                 SelectionManager.GetSelectedUnit().MoveTo(this);
             }
+            if (valid && selected_unit && selected_unit.BelongsToCurrentPlayer())
+            {
+                selected_unit.ExecuteSelectedAbility(unit);
+                return;
+            }
 
+            if (Player.G_CURRENT_PLAYER.held_unit && Player.G_CURRENT_PLAYER.held_unit.GetComponent<Draggable>().IsPlaceable()) Player.G_CURRENT_PLAYER.held_unit.Place(this);
             SelectionManager.Select(this);
-            if (Player.G_CURRENT_PLAYER.held_unit && Player.G_CURRENT_PLAYER.held_unit.GetComponent<Draggable>().IsPlaceable()) Player.G_CURRENT_PLAYER.held_unit.Place();
         }
     }
 
@@ -214,6 +247,21 @@ public abstract class Tile : WarforgedMonoBehaviour
     {
         if (owner == Player.Info.PLAYER1) GetHighlightRenderer().material = Resources.Load<Material>("Materials/PurpleSelectable");
         else if (owner == Player.Info.PLAYER2) GetHighlightRenderer().material = Resources.Load<Material>("Materials/OrangeSelectable");
+    }
+
+    public static Direction GetDirectionBetweenTiles(Tile current, Tile target)
+    {
+        float dx = target.x - current.x;
+        float dz = target.y - current.y;
+        if (Mathf.Abs(dx) >= Mathf.Abs(dz))
+        {
+            //left or right
+            return (dx > 0) ? Direction.RIGHT : Direction.LEFT;
+        }
+        else //up or down
+        {
+            return (dz > 0) ? Direction.UP : Direction.DOWN;
+        }
     }
 }
 

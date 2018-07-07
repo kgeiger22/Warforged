@@ -16,7 +16,7 @@ public class TileEditor : MonoBehaviour {
 
     private void Update()
     {
-        if (ready_to_delete && !GameObject.ReferenceEquals(Selection.activeGameObject, gameObject))
+        if (ready_to_delete && Selection.activeGameObject != gameObject)
             DestroyImmediate(gameObject);
     }
 }

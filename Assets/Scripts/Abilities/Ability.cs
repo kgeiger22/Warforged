@@ -5,15 +5,31 @@ using UnityEngine;
 public abstract class Ability
 {
 
-    public Unit owner;
-    public int range;
-
-    List<Tile> targettable_tiles = new List<Tile>();
-
-    public virtual void FindTargettableTiles()
+    public enum Type
     {
-        //clear previous tiles
-        owner.RemoveSelectableTiles();
+        DAMAGE,
+        STASUS,
+        SUPPORT,
+        PASSIVE,
+    }
+    public enum SubType
+    {
+        MELEE,
+        RANGED,
+        MAGIC,
+        NERF,
+        BUFF,
+        TERRAIN,
+    }
+
+    public string name;
+    protected Unit owner;
+    public int range;
+    public bool instant_execute = false;
+
+    public virtual void HighlightTargettableTiles()
+    {
+        Board.ResetAllTiles();
 
         Queue<Tile> process = new Queue<Tile>();
 
@@ -24,27 +40,26 @@ public abstract class Ability
         {
             current_tile = process.Dequeue();
             if (current_tile.targettable || current_tile.distance > range) continue;
-            if (IsTargettableTile(current_tile))
+            else
             {
-                targettable_tiles.Add(current_tile);
-                current_tile.targettable = true;
-            }
+                if (IsTargettableTile(current_tile))
+                {
+                    current_tile.targettable = true;
+                    if (IsValidTile(current_tile))
+                    {
+                        current_tile.valid = true;
+                    }
+                }
 
-            foreach (Tile next_tile in current_tile.adjacency_list)
-            {
-                next_tile.distance = current_tile.distance + 1;
-                process.Enqueue(next_tile);
+                foreach (Tile next_tile in current_tile.adjacency_list)
+                {
+                    next_tile.distance = current_tile.distance + 1;
+                    next_tile.parent = current_tile;
+                    process.Enqueue(next_tile);
+
+                }
             }
         }
-    }
-
-    public void RemoveTargettableTiles()
-    {
-        foreach (Tile tile in targettable_tiles)
-        {
-            tile.Reset();
-        }
-        targettable_tiles.Clear();
     }
 
     //override to change which tiles could potentially be targetted regardless of unit placement
@@ -56,13 +71,10 @@ public abstract class Ability
     //override to change valid targets
     protected virtual bool IsValidTile(Tile tile)
     {
-        return (!tile.unit.BelongsToCurrentPlayer());
+        return (tile.unit && !tile.unit.BelongsToCurrentPlayer());
     }
 
-    public virtual void Resolve(Unit target)
-    {
-
-    }
+    public abstract void Execute(Unit target);
 
     protected virtual void ApplyEffect(Unit target, Effect effect)
     {
@@ -73,6 +85,12 @@ public abstract class Ability
     //override for attacks that calculate damage differently
     protected virtual void DealDamage(Unit target, float damage)
     {
-
+        float multiplier = 1.0f;
+        if (WarforgedMonoBehaviour.AreSameDirection(owner.direction, target.direction))
+        {
+            Debug.Log("backstab");
+            multiplier = 1.2f;
+        }
+        target.ReceiveDamage(damage * multiplier * owner.ATK * ((100f - target.DEF) * 0.01f));
     }
 }

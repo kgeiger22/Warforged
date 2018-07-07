@@ -8,9 +8,11 @@ public static class CanvasManager {
     {
         STATE = 0,
         STORE,
+        UNITPLACE,
         TILEINFO,
         UNITINFO,
-
+        UNITACTION,
+        UNITABILITY,
         COUNT
     }
 
@@ -35,11 +37,20 @@ public static class CanvasManager {
             case Menu.STORE:
                 result = GameObject.Instantiate(Resources.Load<GameObject>("Prefabs/StoreCanvas"));
                 break;
+            case Menu.UNITPLACE:
+                result = GameObject.Instantiate(Resources.Load<GameObject>("Prefabs/UnitPlaceCanvas"));
+                break;
             case Menu.TILEINFO:
                 result = GameObject.Instantiate(Resources.Load<GameObject>("Prefabs/TileInfoCanvas"));
                 break;
             case Menu.UNITINFO:
                 result = GameObject.Instantiate(Resources.Load<GameObject>("Prefabs/UnitInfoCanvas"));
+                break;
+            case Menu.UNITACTION:
+                result = GameObject.Instantiate(Resources.Load<GameObject>("Prefabs/UnitActionCanvas"));
+                break;
+            case Menu.UNITABILITY:
+                result = GameObject.Instantiate(Resources.Load<GameObject>("Prefabs/UnitAbilityCanvas"));
                 break;
             default:
                 break;
@@ -56,5 +67,15 @@ public static class CanvasManager {
     static public void DisableCanvas(Menu _menu)
     {
         menus[(int)_menu].SetActive(false);
+    }
+
+    static public GameObject GetCanvas(Menu _menu)
+    {
+        return menus[(int)_menu];
+    }
+
+    static public UnitInfoCanvas GetUnitInfoCanvas()
+    {
+        return GetCanvas(Menu.UNITINFO).GetComponent<UnitInfoCanvas>();
     }
 }

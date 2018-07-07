@@ -2,13 +2,9 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-[RequireComponent(typeof(Draggable))]
 public abstract class Unit : WarforgedMonoBehaviour
 {
-
-    static float move_speed = 15.0f;
-
-    protected Draggable S_draggable;
+    float move_speed = 4.0f;
 
     public enum Type
     {
@@ -41,7 +37,8 @@ public abstract class Unit : WarforgedMonoBehaviour
     [SerializeField]
     public Material player2_material;
     
-    public Player owner { get; protected set; }
+    public Player.Info owner { get; protected set; }
+    public void SetOwner(Player.Info _owner) { owner = _owner; }
 
     public int HP { get; protected set; }
     public int ATK { get; protected set; }
@@ -56,24 +53,35 @@ public abstract class Unit : WarforgedMonoBehaviour
         x = _x;
         y = _y;
     }
-
+    
     public int health { get; protected set; }
     public int moves_remaining { get; protected set; }
 
-
-    List<Tile> moveable_tiles = new List<Tile>();
-    Stack<Tile> path = new Stack<Tile>();
+    
+    Queue<Tile> path = new Queue<Tile>();
+    public Direction direction;
     protected Vector3 velocity;
-    protected Vector3 heading;
+    private Tile previous_tile;
+    private Tile next_tile;
+    private float lerp_time;
 
     public List<Ability> abilities { get; protected set; }
     public List<Effect> effects { get; protected set; }
 
+    protected int selected_ability_index = 1;
+    protected bool IsMoving = false;
+
     protected override void OnInstantiate()
     {
         fsm = new UnitStateFSM(this);
-        S_draggable = GetComponent<Draggable>();
-        owner = Player.G_CURRENT_PLAYER;
+        //InitializeVariables();
+    }
+    
+    public virtual void InitializeVariables()
+    {
+        abilities = new List<Ability>();
+        abilities.Add(new Wait(this));
+        effects = new List<Effect>();
     }
 
     protected override void OnPostInstantiate()
@@ -83,7 +91,7 @@ public abstract class Unit : WarforgedMonoBehaviour
 
     protected override void OnUpdate()
     {
-        if (fsm.GetUnitState().type == UnitState.State_Type.MOVING)
+        if (IsMoving)
         {
             MoveAlongPath();
         }
@@ -91,36 +99,51 @@ public abstract class Unit : WarforgedMonoBehaviour
 
     protected override void OnRoundStart()
     {
+        FinishMoveTo();
         moves_remaining = SPD;
+        SetState(new ReadyToMoveState(this));
+        selected_ability_index = 1;
     }
 
-    public void Place()
+    protected override void OnRoundEnd()
+    {
+        for (int i = effects.Count - 1; i >= 0; --i)
+        {
+            effects[i].OnEndOfRound();
+        }
+    }
+
+    public void Place(Tile _tile)
     {
         //apply correct material
-        if (owner.info == Player.Info.PLAYER1)
+        if (owner == Player.Info.PLAYER1)
         {
             SetMaterials(player1_material);
         }
-        else if (owner.info == Player.Info.PLAYER2)
+        else if (owner == Player.Info.PLAYER2)
         {
             SetMaterials(player2_material);
         }
         //move unit to center of tile
-        transform.position = SelectionManager.GetSelectedTile().transform.position + new Vector3(0, 0.5f, 0);
+        transform.position = _tile.transform.position + new Vector3(0, 0.5f, 0);
         //tell the tile that it owns this unit
-        SelectionManager.GetSelectedTile().Place(this);
+        _tile.Place(this);
         //reset player held value
-        owner.PlaceUnit();
+        GetPlayer(owner).DropUnit();
         //switch unit state upon placement
-        fsm.NextState();
+        SetState(new InactiveState(this));
         //apply monetary cost to player
-        owner.money -= GetCost(type);
+        GetPlayer(owner).PurchaseUnit(type);
         //add unit to player unit pool
-        owner.AddUnit(this);
-        //generate another draggable, remove this line for single-placement
-        UnitFactory.GenerateUnit(type);
+        GetPlayer(owner).AddUnit(this);
         //Update selection
         SelectionManager.Reselect();
+        //If the unit was a draggable, disable draggable script
+        Draggable draggable = GetComponent<Draggable>();
+        if (draggable)
+        {
+            Destroy(draggable);
+        }
     }
 
     public void SetMaterials(Material _mat)
@@ -149,13 +172,36 @@ public abstract class Unit : WarforgedMonoBehaviour
 
     }
 
+    public void SetState(UnitState _state)
+    {
+        if (fsm != null) fsm.SetState(_state);
+    }
+
+    public UnitState.State_Type GetState()
+    {
+        if (fsm != null) return fsm.GetUnitState().type;
+        else return UnitState.State_Type.INACTIVE;
+    }
+
     public Tile GetCurrentTile()
     {
         return Board.G_BOARD.GetTile(x, y);
     }
 
-    public void FindSelectableTiles()
+    public Ability GetSelectedAbility()
     {
+        return abilities[selected_ability_index];
+    }
+
+    public Player GetOwner()
+    {
+        return GetPlayer(owner);
+    }
+
+    protected void HighlightMovableTiles()
+    {
+        Board.ResetAllTiles();
+
         Queue<Tile> process = new Queue<Tile>();
 
         Tile current_tile = GetCurrentTile();
@@ -164,127 +210,165 @@ public abstract class Unit : WarforgedMonoBehaviour
         while (process.Count > 0)
         {
             current_tile = process.Dequeue();
-            moveable_tiles.Add(current_tile);
             current_tile.movable = true;
 
-            foreach (Tile next_tile in current_tile.adjacency_list)
+            foreach (Tile adjacent_tile in current_tile.adjacency_list)
             {
-                int next_move_cost = next_tile.movement_cost + current_tile.distance;
-                if (next_tile.IsWalkable() && next_move_cost < next_tile.distance && next_move_cost <= moves_remaining)
+                int next_move_cost = adjacent_tile.movement_cost + current_tile.distance;
+                if (adjacent_tile.IsWalkable() && next_move_cost < adjacent_tile.distance && next_move_cost <= moves_remaining)
                 {
-                    next_tile.parent = current_tile;
-                    next_tile.distance = next_move_cost;
-                    process.Enqueue(next_tile);
+                    adjacent_tile.parent = current_tile;
+                    adjacent_tile.distance = next_move_cost;
+                    process.Enqueue(adjacent_tile);
+                }
+                else
+                {
+                    adjacent_tile.targettable = true;
                 }
             }
         }
     }
 
-    public void RemoveSelectableTiles()
-    {
-        foreach (Tile tile in moveable_tiles)
-        {
-            tile.Reset();
-        }
-        moveable_tiles.Clear();
-    }
-
     public void Select()
     {
         CanvasManager.EnableCanvas(CanvasManager.Menu.UNITINFO);
-        if (BelongsToCurrentPlayer() && GetCurrentState() == GameState.State_Type.TURN)
+        CanvasManager.GetUnitInfoCanvas().UpdateInfo(this);
+        if (BelongsToCurrentPlayer())
         {
-            //get unit ready to move
-            FindSelectableTiles();
+            //if (GetState() == UnitState.State_Type.READYTOATTACK) SetState(new ReadyToMoveState(this));
+            //if (GetState() == UnitState.State_Type.READYTOMOVE) 
+            if (GetGameState() == GameState.State_Type.TURN && GetState() != UnitState.State_Type.INACTIVE && (GetOwner().chosen_unit == null || GetOwner().chosen_unit == this))
+            {
+                if (GetState() == UnitState.State_Type.READYTOATTACK) CanvasManager.EnableCanvas(CanvasManager.Menu.UNITABILITY);
+                SelectTiles();
+            }
         }
     }
 
     public void Unselect()
     {
         CanvasManager.DisableCanvas(CanvasManager.Menu.UNITINFO);
-        RemoveSelectableTiles();
+        CanvasManager.DisableCanvas(CanvasManager.Menu.UNITABILITY);
+        Board.ResetAllTiles();
+    }
+
+    public void SelectTiles()
+    {
+        if (fsm.GetUnitState().type == UnitState.State_Type.READYTOMOVE || fsm.GetUnitState().type == UnitState.State_Type.MOVING)
+        {
+            //get unit ready to move
+            HighlightMovableTiles();
+        }
+        else if (fsm.GetUnitState().type == UnitState.State_Type.READYTOATTACK)
+        {
+            //get unit ready to attack
+            GetSelectedAbility().HighlightTargettableTiles();
+        }
     }
 
     public override void Delete()
     {
-        Unselect();
-        if (owner) owner.RemoveUnit(this);
-        Destroy(gameObject);
+        if (IsSelected()) Unselect();
+        GetCurrentTile().Unplace();
+        GetPlayer(owner).RemoveUnit(this);
+        if (GetGameState() == GameState.State_Type.BUILD)
+        {
+            CanvasManager.GetCanvas(CanvasManager.Menu.UNITPLACE).GetComponent<UnitPlaceCanvas>().AddUnitPlaceButton(this);
+            gameObject.SetActive(false);
+            Draggable draggable = GetComponent<Draggable>();
+            if (draggable)
+            {
+                Destroy(draggable);
+            }
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
     }
 
     public bool BelongsToCurrentPlayer()
     {
-        return owner.info == Player.G_CURRENT_PLAYER.info;
+        return owner == Player.G_CURRENT_PLAYER.info;
     }
 
     public void MoveTo(Tile tile)
     {
-        moves_remaining -= tile.distance;
-        GetCurrentTile().Unplace();
-        tile.Place(this);
-        //build path
-        path.Clear();
-        Tile next_tile = tile;
-        while (next_tile.parent != null)
+        if (tile != GetCurrentTile())
         {
-            path.Push(next_tile);
-            next_tile = next_tile.parent;
+            moves_remaining -= tile.distance;
+            //build path
+            Stack<Tile> stack = new Stack<Tile>();
+            Tile t = tile;
+            while (t.parent != null)
+            {
+                stack.Push(t);
+                t = t.parent;
+            }
+            while (stack.Count > 0)
+            {
+                path.Enqueue(stack.Pop());
+            }
+            previous_tile = GetCurrentTile();
+            next_tile = path.Dequeue();
+            //begin movement
+            GetCurrentTile().Unplace();
+            tile.Place(this);
+            IsMoving = true;
         }
-        RemoveSelectableTiles();
+
+        SetState(new ReadyToAttackState(this));
+        Board.ResetAllTiles();
         SelectionManager.Reselect();
-
-        //begin movement
-        fsm.SetState(new MovingState(this));
+        GetOwner().SetChosenUnit(this);
+        //move camera
+        Camera.main.GetComponent<MainCamera>().MoveToTile(tile);
     }
 
-    void CalculateHeading(Vector3 target)
+    //only call when a unit is moving, teleports to destination tile
+    public void FinishMoveTo()
     {
-        heading = target - transform.position;
-        heading.Normalize();
+        if (!IsMoving) return;
+        while (path.Count > 0)
+        {
+            MoveAlongPath();
+        }
+        fsm.NextState();
     }
 
-    void SetHorizontalVelocity()
+    public static Direction GetDirectionBetweenUnits(Unit current, Unit target)
     {
-        velocity = heading * move_speed;
+        return Tile.GetDirectionBetweenTiles(current.GetCurrentTile(), target.GetCurrentTile());
     }
 
     private void MoveAlongPath()
     {
-        //if path is empty, end moving state
-        if (path.Count == 0)
+        lerp_time += Time.deltaTime * move_speed;
+        Vector3 target_position = Vector3.Lerp(previous_tile.transform.position, next_tile.transform.position, lerp_time);
+        transform.position = new Vector3(target_position.x, transform.position.y, target_position.z);
+        if (lerp_time >= 1)
         {
-            //move to next state
-            fsm.NextState();
-        }
-        else
-        {
-            Tile t = path.Peek();
-            Vector3 target = t.transform.position;
-
-            //calculate units position on top of the target tile
-            target.y = transform.position.y;
-
-            if (Vector3.Distance(transform.position, target) >= 0.1f)
+            lerp_time = 0;
+            if (path.Count == 0)
             {
-                CalculateHeading(target);
-                SetHorizontalVelocity();
-
-                transform.forward = heading;
-                transform.position += velocity * Time.deltaTime;
+                IsMoving = false;
+                fsm.NextState();
             }
             else
             {
-                //tile center reached
-                transform.position = target;
-                path.Pop();
+                previous_tile = next_tile;
+                next_tile = path.Dequeue();
+                FaceDirection(Tile.GetDirectionBetweenTiles(previous_tile, next_tile));
             }
         }
     }
 
-    public void DisableDraggable()
+    private void FaceDirection(Direction _direction)
     {
-        S_draggable.enabled = false;
+        direction = _direction;
+        transform.forward = GetDirectionVector(_direction);
     }
+    
 
     //adds an ability to a unit's arsenal
     public void AddAbility(Ability _ability)
@@ -293,9 +377,29 @@ public abstract class Unit : WarforgedMonoBehaviour
     }
 
     //this is the final calculated value of damage
-    public void ReduceHealth(int _damage)
+    public void ReceiveDamage(float _damage)
     {
-        health -= _damage;
+        ActivateReceiveDamageEffects(ref _damage);
+        int rounded_damage = Mathf.RoundToInt(_damage);
+        health -= rounded_damage;
+        DamageText damage_text = Instantiate(Resources.Load<DamageText>("Prefabs/DamageText"));
+        damage_text.transform.position = transform.position + new Vector3(0, 5, 0);
+        damage_text.SetText("-" + rounded_damage.ToString());
+        Debug.Log(name + " took " + rounded_damage + " damage");
+        if (health <= 0)
+        {
+            Debug.Log(name + " fainted");
+            Delete();
+        }
+    }
+
+    protected void ActivateReceiveDamageEffects(ref float _damage)
+    {
+        foreach (Effect e in effects)
+        {
+            if (e.type != Effect.Type.RECEIVE_DAMAGE) continue;
+            else e.Activate(ref _damage);
+        }
     }
 
     public void ApplyEffect(Effect _effect)
@@ -303,4 +407,60 @@ public abstract class Unit : WarforgedMonoBehaviour
         _effect.OnApply();
         effects.Add(_effect);
     }
+
+    public void ResetWithDraggable()
+    {
+        gameObject.AddComponent<Draggable>();
+    }
+
+    public void ExecuteSelectedAbility(Unit _target)
+    {
+        FinishMoveTo();
+        if (_target && this != _target)
+        {
+            FaceDirection(GetDirectionBetweenUnits(this, _target));
+        }
+        Camera.main.GetComponent<MainCamera>().MoveToTile(GetCurrentTile());
+        abilities[selected_ability_index].Execute(_target);
+        EndTurn();
+    }
+
+    public bool IsSelected()
+    {
+        return this == SelectionManager.GetSelectedUnit();
+    }
+
+    public void EndTurn()
+    {
+        SetState(new InactiveState(this));
+        GetOwner().EndTurn();
+        //Board.ResetAllTiles();
+    }
+
+    public void AddEffect(Effect _effect)
+    {
+        effects.Add(_effect);
+    }
+
+    public void RemoveEffect(Effect _effect)
+    {
+        effects.Remove(_effect);
+    }
+
+    public void SelectAbility(int _ability_index)
+    {
+        selected_ability_index = _ability_index;
+        if (abilities[selected_ability_index].instant_execute)
+        {
+            ExecuteSelectedAbility(null);
+            return;
+        }
+        SelectTiles();
+    }
+
+    public bool IsBehind(Unit _target)
+    {
+        return false;
+    }
+
 }

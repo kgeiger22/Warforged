@@ -10,10 +10,10 @@ public static class HoverManager {
     {
         if (hovered)
         {
-            if (ReferenceEquals(hovered, _hover)) return;
+            if (hovered == _hover) return;
             else Unhover();
         }
-        if (!ReferenceEquals(_hover, SelectionManager.GetSelectedTile())) hovered = _hover;
+        if (_hover != SelectionManager.GetSelectedTile()) hovered = _hover;
         if (hovered) hovered.Hover();
     }
 

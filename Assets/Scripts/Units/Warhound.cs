@@ -6,14 +6,18 @@ public class Warhound : Unit
 {
     public static int cost = 17;
 
-    protected override void OnInstantiate()
+    public override void InitializeVariables()
     {
-        base.OnInstantiate();
+        base.InitializeVariables();
+
         type = Type.WARHOUND;
+        name = "Snuffles the Good Dog";
         HP = 110;
         ATK = 50;
         DEF = 12;
         ACC = 0.7f;
         SPD = 6;
+        abilities.Add(new Melee(this));
+
     }
 }

@@ -6,15 +6,19 @@ public class Archer : Unit
 {
     public static int cost = 19;
 
-    protected override void OnInstantiate()
+    public override void InitializeVariables()
     {
-        base.OnInstantiate();
+        base.InitializeVariables();
+
         type = Type.ARCHER;
+        name = "Hans Fletcherson";
         HP = 50;
         ATK = 85;
         DEF = 8;
         ACC = 0.7f;
         SPD = 5;
+        abilities.Add(new RangedShot(this));
+
     }
 }
 

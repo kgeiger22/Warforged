@@ -14,16 +14,40 @@ public class Player : WarforgedMonoBehaviour {
     public static List<Player> G_PLAYERS = new List<Player>();
     public static Player G_CURRENT_PLAYER;
 
-    public int money;
+    public int money { get; protected set; }
     public Info info { get; protected set; }
     public Unit held_unit { get; protected set; }
+    public Unit chosen_unit { get; protected set; }
+    public List<Unit> army { get; protected set; }
     public List<Unit> units { get; protected set; }
+
+    public static new Player GetPlayer(Info _info)
+    {
+        switch (_info)
+        {
+            case Info.PLAYER1:
+                return G_PLAYERS[0];
+            case Info.PLAYER2:
+                return G_PLAYERS[1];
+            default:
+                return null;
+        }
+    }
 
     // Use this for initialization
     protected override void OnGameInit () {
         G_PLAYERS.Add(this);
         info = (Info)G_PLAYERS.Count;
+        //populate units list
         units = new List<Unit>();
+        PopulateArmyList();
+        money = 200;
+    }
+
+
+    protected override void OnGamePostInit()
+    {
+        base.OnGamePostInit();
     }
 
     protected override void OnUpdate()
@@ -31,9 +55,25 @@ public class Player : WarforgedMonoBehaviour {
         if (Input.GetMouseButtonDown(1)) SelectionManager.Unselect();
     }
 
+    protected override void OnTurnStart()
+    {
+        if (IsPlayerTurn(info))
+        {
+            foreach (Unit unit in units)
+            {
+                if (unit.GetState() == UnitState.State_Type.READYTOMOVE)
+                {
+                    SelectionManager.Select(unit.GetCurrentTile());
+                    Camera.main.GetComponent<MainCamera>().MoveToTile(SelectionManager.GetSelectedTile());
+                    return;
+                }
+            }
+        }
+    }
+
+
     public static void SwitchPlayers()
     {
-        G_CURRENT_PLAYER.DropUnit();
         switch (G_CURRENT_PLAYER.info)
         {
             case Info.PLAYER1:
@@ -61,6 +101,7 @@ public class Player : WarforgedMonoBehaviour {
         }
     }
 
+    //will delete the currently held unit if there is one
     public void HoldUnit(Unit _unit)
     {
         if (held_unit)
@@ -71,12 +112,12 @@ public class Player : WarforgedMonoBehaviour {
     }
 
 
-    public void DropUnit()
+    public void DeleteHeldUnit()
     {
         HoldUnit(null);
     }
 
-    public void PlaceUnit()
+    public void DropUnit()
     {
         held_unit = null;
     }
@@ -132,5 +173,72 @@ public class Player : WarforgedMonoBehaviour {
             total_speed += _unit.SPD;
         }
         return total_speed;
+    }
+
+    public bool HasFunds(Unit.Type _type)
+    {
+        return money >= Unit.GetCost(_type);
+    }
+
+    public void PurchaseUnit(Unit.Type _type)
+    {
+        money -= Unit.GetCost(_type);
+        if (money < 0) Debug.Log("ERROR: Player has negative funds");
+    }
+
+    public void RefundUnit(Unit.Type _type)
+    {
+        money += Unit.GetCost(_type);
+    }
+
+    public void PopulateArmyList()
+    {
+        army = new List<Unit>
+        {
+            UnitFactory.GenerateUnit(Unit.Type.KNIGHT, info),
+            UnitFactory.GenerateUnit(Unit.Type.KNIGHT, info),
+            UnitFactory.GenerateUnit(Unit.Type.KNIGHT, info),
+            UnitFactory.GenerateUnit(Unit.Type.ARCHER, info),
+            UnitFactory.GenerateUnit(Unit.Type.ARCHER, info),
+            UnitFactory.GenerateUnit(Unit.Type.WARHOUND, info)
+        };
+        foreach (Unit unit in army)
+        {
+            unit.gameObject.SetActive(false);
+        }
+    }
+
+    public void EndTurn()
+    {
+        chosen_unit = null;
+        BaseGame.G_GAMESTATEFSM.NextState();
+    }
+
+    public void SetChosenUnit(Unit _chosen)
+    {
+        chosen_unit = _chosen;
+    }
+
+    public bool IsRoundCompleteForThisPlayer()
+    {
+        foreach(Unit unit in units)
+        {
+            if (unit.GetState() != UnitState.State_Type.INACTIVE) return false;
+        }
+        return true;
+    }
+
+
+    public Player GetOtherPlayer()
+    {
+        switch (info)
+        {
+            case Info.PLAYER1:
+                return GetPlayer(Info.PLAYER2);
+            case Info.PLAYER2:
+                return GetPlayer(Info.PLAYER1);
+            default:
+                return null;
+        }
     }
 }

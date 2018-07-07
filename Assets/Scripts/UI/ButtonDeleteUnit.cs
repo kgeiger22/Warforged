@@ -14,7 +14,7 @@ public class ButtonDeleteUnit : MonoBehaviour {
 
     private void Update()
     {
-        if (SelectionManager.GetSelectedUnit() && ReferenceEquals(SelectionManager.GetSelectedUnit().owner, Player.G_CURRENT_PLAYER)) S_button.interactable = true;
+        if (SelectionManager.GetSelectedUnit() && SelectionManager.GetSelectedUnit().owner == Player.G_CURRENT_PLAYER.info) S_button.interactable = true;
         else S_button.interactable = false;
     }
 

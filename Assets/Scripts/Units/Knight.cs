@@ -6,14 +6,17 @@ public class Knight : Unit
 {
     public static int cost = 23;
 
-    protected override void OnInstantiate()
+    public override void InitializeVariables()
     {
-        base.OnInstantiate();
+        base.InitializeVariables();
         type = Type.KNIGHT;
+        name = "Diane the Dim";
         HP = 150;
         ATK = 50;
         DEF = 40;
         ACC = 0.8f;
         SPD = 4;
+        abilities.Add(new Melee(this));
+        abilities.Add(new Guard(this));
     }
 }

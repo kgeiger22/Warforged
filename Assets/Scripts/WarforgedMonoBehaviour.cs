@@ -4,16 +4,74 @@ using UnityEngine;
 
 public class WarforgedMonoBehaviour : MonoBehaviour {
 
+    public static readonly Vector3 up = new Vector3(0, 0, 1);
+    public static readonly Vector3 down = new Vector3(0, 0, -1);
+    public static readonly Vector3 left = new Vector3(-1, 0, 0);
+    public static readonly Vector3 right = new Vector3(1, 0, 0);
+
+    public enum Direction
+    {
+        NONE,
+        UP,
+        DOWN,
+        LEFT,
+        RIGHT
+    }
+
+    public static Vector3 GetDirectionVector(Direction _direction)
+    {
+        switch (_direction)
+        {
+            case Direction.UP:
+                return up;
+            case Direction.DOWN:
+                return down;
+            case Direction.LEFT:
+                return left;
+            case Direction.RIGHT:
+                return right;
+            default:
+                return Vector3.zero;
+        }
+    }
+
+    public static bool AreOppositeDirections(Direction d1, Direction d2)
+    {
+        return GetDirectionVector(d1) + GetDirectionVector(d2) == Vector3.zero;
+    }
+
+    public static bool AreSameDirection(Direction d1, Direction d2)
+    {
+        return d1 == d2;
+    }
+
     protected void Awake()
     {
-        EventHandler._OnGamePreInit += OnGamePreInit;
-        EventHandler._OnGameInit += OnGameInit;
+        AddListeners();
+    }
+
+    protected void AddListeners()
+    {
+        EventHandler._OnGamePreInit  += OnGamePreInit;
+        EventHandler._OnGameInit     += OnGameInit;
         EventHandler._OnGamePostInit += OnGamePostInit;
-        EventHandler._OnGameStart += OnGameStart;
-        EventHandler._OnTurnStart += OnTurnStart;
-        EventHandler._OnTurnEnd += OnTurnEnd;
-        EventHandler._OnRoundStart += OnRoundStart;
-        EventHandler._OnRoundEnd += OnRoundEnd;
+        EventHandler._OnGameStart    += OnGameStart;
+        EventHandler._OnTurnStart    += OnTurnStart;
+        EventHandler._OnTurnEnd      += OnTurnEnd;
+        EventHandler._OnRoundStart   += OnRoundStart;
+        EventHandler._OnRoundEnd     += OnRoundEnd;
+    }
+
+    protected void RemoveListeners()
+    {
+        EventHandler._OnGamePreInit  -= OnGamePreInit;
+        EventHandler._OnGameInit     -= OnGameInit;
+        EventHandler._OnGamePostInit -= OnGamePostInit;
+        EventHandler._OnGameStart    -= OnGameStart;
+        EventHandler._OnTurnStart    -= OnTurnStart;
+        EventHandler._OnTurnEnd      -= OnTurnEnd;
+        EventHandler._OnRoundStart   -= OnRoundStart;
+        EventHandler._OnRoundEnd     -= OnRoundEnd;
     }
 
 
@@ -45,15 +103,16 @@ public class WarforgedMonoBehaviour : MonoBehaviour {
 
     public virtual void Delete()
     {
+        RemoveListeners();
         Destroy(gameObject);
     }
 
-    protected GameState.State_Type GetCurrentState()
+    protected GameState.State_Type GetGameState()
     {
         return GameStateManager.GetGameState().type;
     }
 
-    protected Player GetPlayer(Player.Info _info)
+    protected static Player GetPlayer(Player.Info _info)
     {
         switch (_info)
         {
@@ -62,6 +121,7 @@ public class WarforgedMonoBehaviour : MonoBehaviour {
             case Player.Info.PLAYER2:
                 return Player.G_PLAYERS[1];
             default:
+                Debug.Log("ERROR: Not a valid player");
                 return null;
         }
     }

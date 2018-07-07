@@ -36,8 +36,8 @@ public class LoadState : GameState
     public override void Enter()
     {
         Player.SetPlayer(player_info);
-        CanvasManager.EnableCanvas(CanvasManager.Menu.STORE);
         type = State_Type.BUILD;
+        CanvasManager.EnableCanvas(CanvasManager.Menu.UNITPLACE);
         switch (player_info)
         {
             case Player.Info.PLAYER1:
@@ -56,8 +56,8 @@ public class LoadState : GameState
     public override void Exit()
     {
         base.Exit();
-        Player.G_CURRENT_PLAYER.HoldUnit(null);
-        CanvasManager.DisableCanvas(CanvasManager.Menu.STORE);
+        Player.G_CURRENT_PLAYER.DeleteHeldUnit();
+        CanvasManager.DisableCanvas(CanvasManager.Menu.UNITPLACE);
     }
 }
 
@@ -84,13 +84,26 @@ public class TurnState : GameState
                 next = this;
                 break;
         }
-        SelectionManager.Unselect();
         EventHandler.StartTurn();
     }
 
     public override void Exit()
     {
         EventHandler.EndTurn();
+        bool player1_round_complete = Player.GetPlayer(Player.Info.PLAYER1).IsRoundCompleteForThisPlayer();
+        bool player2_round_complete = Player.GetPlayer(Player.Info.PLAYER2).IsRoundCompleteForThisPlayer();
+        if (player1_round_complete && player2_round_complete)
+        {
+            next = new RoundState();
+        }
+        else if (player1_round_complete)
+        {
+            next = new TurnState(Player.Info.PLAYER2);
+        }
+        else if (player2_round_complete)
+        {
+            next = new TurnState(Player.Info.PLAYER1);
+        }
     }
 }
 
@@ -98,7 +111,10 @@ public class RoundState : GameState
 {
     public override void Enter()
     {
+        EventHandler.EndRound();
+
         type = State_Type.ROUND;
+        //decide who moves first
         int speed_player1 = Player.CalculateSpeed(Player.Info.PLAYER1);
         int speed_player2 = Player.CalculateSpeed(Player.Info.PLAYER2);
         if (speed_player1 > speed_player2)
@@ -118,5 +134,7 @@ public class RoundState : GameState
         }
         EventHandler.StartRound();
         BaseGame.G_GAMESTATEFSM.NextState();
+
+        GameObject.Find("Button_NextRound").GetComponent<ButtonNextRound>().i++;
     }
 }

@@ -14,7 +14,6 @@ public class ButtonGenerateUnit : MonoBehaviour {
     private void OnEnable()
     {
         button = GetComponent<Button>();
-        button.onClick.AddListener(() => UnitFactory.GenerateUnit(type, null));
 
         transform.Find("Text").GetComponent<Text>().text = type.ToString() + " (" + Unit.GetCost(type).ToString() + ")";
     }
@@ -30,5 +29,10 @@ public class ButtonGenerateUnit : MonoBehaviour {
             button.interactable = false;
         }
         else button.interactable = true;
+    }
+
+    public void ClickEvent()
+    {
+        //UnitFactory.GenerateDraggableUnit(type);
     }
 }

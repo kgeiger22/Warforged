@@ -31,11 +31,6 @@ public class DragState : UnitState
         type = State_Type.DRAG;
         next = new InactiveState(owner);
     }
-
-    public override void Exit()
-    {
-        owner.DisableDraggable();
-    }
 }
 
 public class ReadyToMoveState : UnitState
@@ -45,7 +40,7 @@ public class ReadyToMoveState : UnitState
     public override void Enter()
     {
         type = State_Type.READYTOMOVE;
-        next = new MovingState(owner);
+        next = new ReadyToMoveState(owner);
     }
 }
 
@@ -56,7 +51,7 @@ public class ReadyToAttackState : UnitState
     public override void Enter()
     {
         type = State_Type.READYTOATTACK;
-        next = new AttackingState(owner);
+        next = new ReadyToMoveState(owner);
     }
 }
 
@@ -67,20 +62,20 @@ public class InactiveState : UnitState
     public override void Enter()
     {
         type = State_Type.INACTIVE;
-        next = new ReadyToMoveState(owner);
+        next = new InactiveState(owner);
     }
 }
 
-public class MovingState : UnitState
-{
-    public MovingState(Unit _owner) : base(_owner) { }
-
-    public override void Enter()
-    {
-        type = State_Type.MOVING;
-        next = new ReadyToMoveState(owner);
-    }
-}
+//public class MovingState : UnitState
+//{
+//    public MovingState(Unit _owner) : base(_owner) { }
+//
+//    public override void Enter()
+//    {
+//        type = State_Type.MOVING;
+//        next = new ReadyToMoveState(owner);
+//    }
+//}
 
 public class AttackingState : UnitState
 {
@@ -89,7 +84,7 @@ public class AttackingState : UnitState
     public override void Enter()
     {
         type = State_Type.ATTACKING;
-        next = new ReadyToAttackState(owner);
+        next = new InactiveState(owner);
     }
 }
 

@@ -11,6 +11,11 @@ public class Board : WarforgedMonoBehaviour {
     public int width;
     public int height;
 
+    public static void ResetAllTiles()
+    {
+        G_BOARD.ResetTiles();
+    }
+
     protected override void OnGamePreInit()
     {
         G_BOARD = this;
@@ -64,6 +69,19 @@ public class Board : WarforgedMonoBehaviour {
     {
         if (x >= 0 && x < width && y >= 0 && y < height) return transform.GetChild(x).GetChild(y).GetComponent<Tile>();
         else return null;
+    }
+
+    public void ResetTiles()
+    {
+        for (int x = 0; x < transform.childCount; ++x)
+        {
+            Transform column = transform.GetChild(x);
+            for (int y = 0; y < column.transform.childCount; ++y)
+            {
+                Tile tile = column.GetChild(y).GetComponent<Tile>();
+                tile.Reset();
+            }
+        }
     }
 
 }
