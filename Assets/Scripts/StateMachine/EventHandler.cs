@@ -13,6 +13,8 @@ public static class EventHandler {
     public static event Handler _OnTurnEnd;
     public static event Handler _OnRoundStart;
     public static event Handler _OnRoundEnd;
+    public static event Handler _OnMatchStart;
+    public static event Handler _OnMatchEnd;
 
 
     public static void PreInitializeScene()
@@ -63,5 +65,17 @@ public static class EventHandler {
     {
         if (_OnRoundEnd != null)
             _OnRoundEnd();
+    }
+
+    public static void StartMatch()
+    {
+        if (_OnMatchStart != null)
+            _OnMatchStart();
+    }
+
+    public static void EndMatch()
+    {
+        if (_OnMatchEnd != null)
+            _OnMatchEnd();
     }
 }

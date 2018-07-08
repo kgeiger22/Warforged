@@ -4,7 +4,8 @@ using UnityEngine;
 
 public static class SelectionManager {
 
-    private static Tile selected = null;
+    public static Tile selected { get; private set; }
+    public static Tile hovered { get; private set; }
 
     public static void Select(Tile _select)
     {
@@ -14,16 +15,15 @@ public static class SelectionManager {
             if (selected == _select)
             {
                 Camera.main.GetComponent<MainCamera>().MoveToTile(selected);
-                return;
             }
             Unselect();
         }
         selected = _select;
         if (selected)
         {
-            selected.Select();
+            selected.OnSelect();
         }
-        HoverManager.Unhover();
+        Unhover();
     }
 
     public static void Reselect()
@@ -40,8 +40,28 @@ public static class SelectionManager {
     {
         if (selected)
         {
-            selected.Unselect();
+            selected.OnUnselect();
             selected = null;
+        }
+    }
+
+    public static void Hover(Tile _hover)
+    {
+        if (hovered)
+        {
+            if (hovered == _hover) return;
+            else Unhover();
+        }
+        if (_hover != GetSelectedTile()) hovered = _hover;
+        if (hovered) hovered.Hover();
+    }
+
+    public static void Unhover()
+    {
+        if (hovered)
+        {
+            hovered.Unhover();
+            hovered = null;
         }
     }
 

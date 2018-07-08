@@ -60,6 +60,8 @@ public class WarforgedMonoBehaviour : MonoBehaviour {
         EventHandler._OnTurnEnd      += OnTurnEnd;
         EventHandler._OnRoundStart   += OnRoundStart;
         EventHandler._OnRoundEnd     += OnRoundEnd;
+        EventHandler._OnMatchStart   += OnMatchStart;
+        EventHandler._OnMatchEnd     += OnMatchEnd;
     }
 
     protected void RemoveListeners()
@@ -72,6 +74,8 @@ public class WarforgedMonoBehaviour : MonoBehaviour {
         EventHandler._OnTurnEnd      -= OnTurnEnd;
         EventHandler._OnRoundStart   -= OnRoundStart;
         EventHandler._OnRoundEnd     -= OnRoundEnd;
+        EventHandler._OnMatchStart   -= OnMatchStart;
+        EventHandler._OnMatchEnd     -= OnMatchEnd;
     }
 
 
@@ -97,6 +101,8 @@ public class WarforgedMonoBehaviour : MonoBehaviour {
     protected virtual void OnTurnEnd() { }
     protected virtual void OnRoundStart() { }
     protected virtual void OnRoundEnd() { }
+    protected virtual void OnMatchStart() { }
+    protected virtual void OnMatchEnd() { }
     protected virtual void OnInstantiate() { }
     protected virtual void OnPostInstantiate() { }
     protected virtual void OnUpdate() { }

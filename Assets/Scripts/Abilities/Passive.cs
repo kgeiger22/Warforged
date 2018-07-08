@@ -2,15 +2,16 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Passive : MonoBehaviour {
+public abstract class Passive : Ability {
 
-	// Use this for initialization
-	void Start () {
-		
-	}
-	
-	// Update is called once per frame
-	void Update () {
-		
-	}
+    public Passive(Unit _owner) : base(_owner)
+    {
+        type = Type.PASSIVE;
+    }
+
+    //override to change valid targets
+    protected override bool IsValidTile(Tile tile)
+    {
+        return true;
+    }
 }

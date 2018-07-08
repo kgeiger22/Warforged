@@ -2,14 +2,14 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class RangedShot : Ability {
+public class RangedShot : Attack {
 
-
-    public RangedShot(Unit _owner)
+    public RangedShot(Unit _owner) : base(_owner)
     {
         name = "Ranged Shot";
-        owner = _owner;
-        range = 2;
+        range = 3;
+        attack_type = AttackType.RANGED;
+        damage_type = DamageType.PHYSICAL;
     }
 
     public override void Execute(Unit target)

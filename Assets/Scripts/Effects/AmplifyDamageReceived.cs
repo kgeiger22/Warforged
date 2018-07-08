@@ -11,6 +11,7 @@ public class AmplifyDamageReceived : Effect {
         multiplier = _multiplier;
         duration = 1;
         type = Type.RECEIVE_DAMAGE;
+        name = "Amplify Damage";
     }
 
     public override void Activate(ref float val)

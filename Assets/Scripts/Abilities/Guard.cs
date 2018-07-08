@@ -4,10 +4,9 @@ using UnityEngine;
 
 public class Guard : Ability {
 
-    public Guard(Unit _owner)
+    public Guard(Unit _owner) : base(_owner)
     {
         name = "Guard";
-        owner = _owner;
         range = 0;
     }
 

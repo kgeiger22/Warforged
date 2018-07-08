@@ -11,6 +11,7 @@ public class GameState : FSM_State {
         TURN,
         END,   
         ROUND,
+        MATCH,
     }
 
     public Player.Info player_info { get; protected set; }
@@ -44,7 +45,7 @@ public class LoadState : GameState
                 next = new BuildState(Player.Info.PLAYER2);
                 break;
             case Player.Info.PLAYER2:
-                next = new RoundState();
+                next = new MatchStartState();
                 break;
             default:
                 Debug.Log("ERROR: No player found for TurnState");
@@ -85,6 +86,9 @@ public class TurnState : GameState
                 break;
         }
         EventHandler.StartTurn();
+        //put code here that applies after every object has started its turn
+        Player.GetPlayer(player_info).SelectFirstValidUnit();
+
     }
 
     public override void Exit()
@@ -136,5 +140,18 @@ public class RoundState : GameState
         BaseGame.G_GAMESTATEFSM.NextState();
 
         GameObject.Find("Button_NextRound").GetComponent<ButtonNextRound>().i++;
+        GameObject.Instantiate(Resources.Load("Prefabs/CanvasNewRound"));
+    }
+}
+
+public class MatchStartState : GameState
+{
+    public override void Enter()
+    {
+        type = State_Type.MATCH;
+        next = new RoundState();
+        EventHandler.StartMatch();
+        Debug.Log("Match Started");
+        BaseGame.G_GAMESTATEFSM.NextState();
     }
 }

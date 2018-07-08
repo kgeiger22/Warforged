@@ -44,7 +44,7 @@ public class Draggable : WarforgedMonoBehaviour
     public bool IsPlaceable()
     {
         if (GetPlayer(unit.owner).money - Unit.GetCost(unit.type) < 0) return false;
-        if (!HoverManager.hovered || !HoverManager.hovered.IsWalkable() || !HoverManager.hovered.BelongsToCurrentPlayer())
+        if (!SelectionManager.hovered || !SelectionManager.hovered.IsWalkable() || !SelectionManager.hovered.BelongsToCurrentPlayer())
         {
             Tile tile = SelectionManager.GetSelectedTile();
             if (!tile || !tile.IsWalkable() || !tile.BelongsToCurrentPlayer()) 

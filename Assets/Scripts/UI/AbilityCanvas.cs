@@ -16,7 +16,7 @@ public class AbilityCanvas : MonoBehaviour
         List<Ability> abilities = SelectionManager.GetSelectedUnit().abilities;
         for (int i = 0; i < abilities.Count; ++i)
         {
-            AddAbilityButton(i, abilities[i].name);
+            if (abilities[i].type != Ability.Type.PASSIVE) AddAbilityButton(i, abilities[i].name);
         }
     }
 

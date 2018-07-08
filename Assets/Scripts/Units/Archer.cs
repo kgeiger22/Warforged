@@ -15,7 +15,7 @@ public class Archer : Unit
         HP = 50;
         ATK = 85;
         DEF = 8;
-        ACC = 0.7f;
+        ACC = 70;
         SPD = 5;
         abilities.Add(new RangedShot(this));
 

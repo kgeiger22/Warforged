@@ -26,10 +26,10 @@ public static class UnitFactory {
         switch (_info)
         {
             case Player.Info.PLAYER1:
-                unit.transform.Rotate(0, 90, 0);
+                unit.FaceDirection(WarforgedMonoBehaviour.Direction.RIGHT);
                 break;
             case Player.Info.PLAYER2:
-                unit.transform.Rotate(0, -90, 0);
+                unit.FaceDirection(WarforgedMonoBehaviour.Direction.LEFT);
                 break;
             default:
                 Debug.Log("ERROR: Unit owner unassigned at generation");

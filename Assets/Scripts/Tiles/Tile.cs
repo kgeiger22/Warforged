@@ -97,17 +97,17 @@ public abstract class Tile : WarforgedMonoBehaviour
         GetHighlightRenderer().material = mat;
     }
 
-    public void Select()
+    public void OnSelect()
     {
         selected = true;
-        if (unit) unit.Select();
+        if (unit) unit.OnSelect();
         CanvasManager.EnableCanvas(CanvasManager.Menu.TILEINFO);
     }
 
-    public void Unselect()
+    public void OnUnselect()
     {
         selected = false;
-        if (unit) unit.Unselect();
+        if (unit) unit.OnUnselect();
         CanvasManager.DisableCanvas(CanvasManager.Menu.TILEINFO);
     }
 
@@ -144,13 +144,13 @@ public abstract class Tile : WarforgedMonoBehaviour
 
     public void OnMouseEnter()
     {
-        HoverManager.Hover(this);
+        SelectionManager.Hover(this);
 
     }
 
     public void OnMouseExit()
     {
-        HoverManager.Unhover();
+        SelectionManager.Unhover();
     }
 
     public bool BelongsToCurrentPlayer()

@@ -4,10 +4,9 @@ using UnityEngine;
 
 public class Wait : Ability {
 
-    public Wait(Unit _owner)
+    public Wait(Unit _owner) : base(_owner)
     {
         name = "Wait";
-        owner = _owner;
         range = 0;
         instant_execute = true;
     }

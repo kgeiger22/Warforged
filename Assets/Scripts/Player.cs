@@ -55,18 +55,15 @@ public class Player : WarforgedMonoBehaviour {
         if (Input.GetMouseButtonDown(1)) SelectionManager.Unselect();
     }
 
-    protected override void OnTurnStart()
+    public void SelectFirstValidUnit()
     {
-        if (IsPlayerTurn(info))
+        foreach (Unit unit in units)
         {
-            foreach (Unit unit in units)
+            if (unit.GetState() == UnitState.State_Type.READYTOMOVE)
             {
-                if (unit.GetState() == UnitState.State_Type.READYTOMOVE)
-                {
-                    SelectionManager.Select(unit.GetCurrentTile());
-                    Camera.main.GetComponent<MainCamera>().MoveToTile(SelectionManager.GetSelectedTile());
-                    return;
-                }
+                SelectionManager.Select(unit.GetCurrentTile());
+                Camera.main.GetComponent<MainCamera>().MoveToTile(SelectionManager.GetSelectedTile());
+                return;
             }
         }
     }

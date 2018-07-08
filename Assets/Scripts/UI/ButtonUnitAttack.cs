@@ -10,6 +10,6 @@ public class ButtonUnitAttack : MonoBehaviour
     public void ClickEvent()
     {
         SelectionManager.GetSelectedUnit().SetState(new ReadyToAttackState(SelectionManager.GetSelectedUnit()));
-        SelectionManager.GetSelectedUnit().SelectTiles();
+        SelectionManager.GetSelectedUnit().HighlightTiles();
     }
 }

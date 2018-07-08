@@ -15,7 +15,7 @@ public class Warhound : Unit
         HP = 110;
         ATK = 50;
         DEF = 12;
-        ACC = 0.7f;
+        ACC = 70;
         SPD = 6;
         abilities.Add(new Melee(this));
 

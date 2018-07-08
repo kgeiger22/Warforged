@@ -14,9 +14,10 @@ public class Knight : Unit
         HP = 150;
         ATK = 50;
         DEF = 40;
-        ACC = 0.8f;
+        ACC = 80;
         SPD = 4;
         abilities.Add(new Melee(this));
         abilities.Add(new Guard(this));
+        abilities.Add(new Regeneration(this));
     }
 }

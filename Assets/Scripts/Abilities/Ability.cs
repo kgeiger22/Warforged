@@ -7,25 +7,21 @@ public abstract class Ability
 
     public enum Type
     {
-        DAMAGE,
-        STASUS,
+        ATTACK,
         SUPPORT,
         PASSIVE,
     }
-    public enum SubType
-    {
-        MELEE,
-        RANGED,
-        MAGIC,
-        NERF,
-        BUFF,
-        TERRAIN,
-    }
 
+    public Type type;
     public string name;
     protected Unit owner;
     public int range;
     public bool instant_execute = false;
+
+    public Ability(Unit _owner)
+    {
+        owner = _owner;
+    }
 
     public virtual void HighlightTargettableTiles()
     {
@@ -65,32 +61,23 @@ public abstract class Ability
     //override to change which tiles could potentially be targetted regardless of unit placement
     protected virtual bool IsTargettableTile(Tile tile)
     {
-        return true;
+        return (tile.x == owner.x || tile.y == owner.y) ;
     }
 
-    //override to change valid targets
     protected virtual bool IsValidTile(Tile tile)
     {
-        return (tile.unit && !tile.unit.BelongsToCurrentPlayer());
+        return true;
     }
-
-    public abstract void Execute(Unit target);
 
     protected virtual void ApplyEffect(Unit target, Effect effect)
     {
         target.ApplyEffect(effect);
     }
 
-    //damage paramater is AFTER attack calculation but BEFORE defense mitigation
-    //override for attacks that calculate damage differently
-    protected virtual void DealDamage(Unit target, float damage)
-    {
-        float multiplier = 1.0f;
-        if (WarforgedMonoBehaviour.AreSameDirection(owner.direction, target.direction))
-        {
-            Debug.Log("backstab");
-            multiplier = 1.2f;
-        }
-        target.ReceiveDamage(damage * multiplier * owner.ATK * ((100f - target.DEF) * 0.01f));
-    }
+
+    //core functionality of ability
+    public abstract void Execute(Unit target);
+
+
+
 }

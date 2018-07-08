@@ -51,7 +51,7 @@ public class ReadyToAttackState : UnitState
     public override void Enter()
     {
         type = State_Type.READYTOATTACK;
-        next = new ReadyToMoveState(owner);
+        next = new ReadyToAttackState(owner);
     }
 }
 

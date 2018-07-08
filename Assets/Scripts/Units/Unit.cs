@@ -44,7 +44,7 @@ public abstract class Unit : WarforgedMonoBehaviour
     public int ATK { get; protected set; }
     public int DEF { get; protected set; }
     public int SPD { get; protected set; }
-    public float ACC { get; protected set; }
+    public int ACC { get; protected set; }
 
     public int x { get; protected set; }
     public int y { get; protected set; }
@@ -61,6 +61,9 @@ public abstract class Unit : WarforgedMonoBehaviour
     Queue<Tile> path = new Queue<Tile>();
     public Direction direction;
     protected Vector3 velocity;
+    protected Tile starting_turn_tile;
+    protected Vector3 starting_turn_position;
+    protected Direction starting_turn_direction;
     private Tile previous_tile;
     private Tile next_tile;
     private float lerp_time;
@@ -89,6 +92,18 @@ public abstract class Unit : WarforgedMonoBehaviour
         health = HP;
     }
 
+    protected override void OnMatchStart()
+    {
+        foreach(Ability a in abilities)
+        {
+            if (a.type == Ability.Type.PASSIVE)
+            {
+                a.Execute(this);
+                Debug.Log("Passive " + a.name + " added to " + name);
+            }
+        }
+    }
+
     protected override void OnUpdate()
     {
         if (IsMoving)
@@ -107,6 +122,7 @@ public abstract class Unit : WarforgedMonoBehaviour
 
     protected override void OnRoundEnd()
     {
+        ActivateGenericEffects(Effect.Type.END_OF_ROUND);
         for (int i = effects.Count - 1; i >= 0; --i)
         {
             effects[i].OnEndOfRound();
@@ -229,7 +245,7 @@ public abstract class Unit : WarforgedMonoBehaviour
         }
     }
 
-    public void Select()
+    public void OnSelect()
     {
         CanvasManager.EnableCanvas(CanvasManager.Menu.UNITINFO);
         CanvasManager.GetUnitInfoCanvas().UpdateInfo(this);
@@ -240,19 +256,19 @@ public abstract class Unit : WarforgedMonoBehaviour
             if (GetGameState() == GameState.State_Type.TURN && GetState() != UnitState.State_Type.INACTIVE && (GetOwner().chosen_unit == null || GetOwner().chosen_unit == this))
             {
                 if (GetState() == UnitState.State_Type.READYTOATTACK) CanvasManager.EnableCanvas(CanvasManager.Menu.UNITABILITY);
-                SelectTiles();
+                HighlightTiles();
             }
         }
     }
 
-    public void Unselect()
+    public void OnUnselect()
     {
         CanvasManager.DisableCanvas(CanvasManager.Menu.UNITINFO);
         CanvasManager.DisableCanvas(CanvasManager.Menu.UNITABILITY);
         Board.ResetAllTiles();
     }
 
-    public void SelectTiles()
+    public void HighlightTiles()
     {
         if (fsm.GetUnitState().type == UnitState.State_Type.READYTOMOVE || fsm.GetUnitState().type == UnitState.State_Type.MOVING)
         {
@@ -268,7 +284,7 @@ public abstract class Unit : WarforgedMonoBehaviour
 
     public override void Delete()
     {
-        if (IsSelected()) Unselect();
+        if (IsSelected()) OnUnselect();
         GetCurrentTile().Unplace();
         GetPlayer(owner).RemoveUnit(this);
         if (GetGameState() == GameState.State_Type.BUILD)
@@ -294,6 +310,10 @@ public abstract class Unit : WarforgedMonoBehaviour
 
     public void MoveTo(Tile tile)
     {
+        starting_turn_tile = GetCurrentTile();
+        starting_turn_direction = direction;
+        starting_turn_position = transform.position;
+        lerp_time = 0;
         if (tile != GetCurrentTile())
         {
             moves_remaining -= tile.distance;
@@ -311,6 +331,7 @@ public abstract class Unit : WarforgedMonoBehaviour
             }
             previous_tile = GetCurrentTile();
             next_tile = path.Dequeue();
+            FaceDirection(Tile.GetDirectionBetweenTiles(previous_tile, next_tile));
             //begin movement
             GetCurrentTile().Unplace();
             tile.Place(this);
@@ -318,9 +339,9 @@ public abstract class Unit : WarforgedMonoBehaviour
         }
 
         SetState(new ReadyToAttackState(this));
-        Board.ResetAllTiles();
-        SelectionManager.Reselect();
+        //Board.ResetAllTiles();
         GetOwner().SetChosenUnit(this);
+        SelectionManager.Reselect();
         //move camera
         Camera.main.GetComponent<MainCamera>().MoveToTile(tile);
     }
@@ -329,11 +350,10 @@ public abstract class Unit : WarforgedMonoBehaviour
     public void FinishMoveTo()
     {
         if (!IsMoving) return;
-        while (path.Count > 0)
+        while (IsMoving)
         {
             MoveAlongPath();
         }
-        fsm.NextState();
     }
 
     public static Direction GetDirectionBetweenUnits(Unit current, Unit target)
@@ -363,7 +383,7 @@ public abstract class Unit : WarforgedMonoBehaviour
         }
     }
 
-    private void FaceDirection(Direction _direction)
+    public void FaceDirection(Direction _direction)
     {
         direction = _direction;
         transform.forward = GetDirectionVector(_direction);
@@ -379,11 +399,18 @@ public abstract class Unit : WarforgedMonoBehaviour
     //this is the final calculated value of damage
     public void ReceiveDamage(float _damage)
     {
+        DamageText damage_text = Instantiate(Resources.Load<DamageText>("Prefabs/DamageText"));
+        damage_text.transform.position = transform.position + new Vector3(0, 5, 0);
+
+        if (_damage < 0)
+        {
+            //miss
+            damage_text.SetText("MISS");
+            return;
+        }
         ActivateReceiveDamageEffects(ref _damage);
         int rounded_damage = Mathf.RoundToInt(_damage);
         health -= rounded_damage;
-        DamageText damage_text = Instantiate(Resources.Load<DamageText>("Prefabs/DamageText"));
-        damage_text.transform.position = transform.position + new Vector3(0, 5, 0);
         damage_text.SetText("-" + rounded_damage.ToString());
         Debug.Log(name + " took " + rounded_damage + " damage");
         if (health <= 0)
@@ -393,12 +420,38 @@ public abstract class Unit : WarforgedMonoBehaviour
         }
     }
 
+    public void ReceiveHealing(int _healing)
+    {
+        if (_healing + health > HP) _healing = HP - health;
+        health += _healing;
+        if (_healing > 0)
+        {
+            DamageText healing_text = Instantiate(Resources.Load<DamageText>("Prefabs/DamageText"));
+            healing_text.GetComponent<TextMesh>().color = Color.green;
+            healing_text.transform.position = transform.position + new Vector3(0, 5, 0);
+            healing_text.SetText("+" + _healing.ToString());
+            Debug.Log(name + " healed " + _healing);
+        }
+    }
+
     protected void ActivateReceiveDamageEffects(ref float _damage)
     {
         foreach (Effect e in effects)
         {
             if (e.type != Effect.Type.RECEIVE_DAMAGE) continue;
             else e.Activate(ref _damage);
+        }
+    }
+
+    protected void ActivateGenericEffects(Effect.Type _type)
+    {
+        foreach (Effect e in effects)
+        {
+            if (e.type != _type) continue;
+            else
+            {
+                e.Activate();
+            }
         }
     }
 
@@ -434,7 +487,6 @@ public abstract class Unit : WarforgedMonoBehaviour
     {
         SetState(new InactiveState(this));
         GetOwner().EndTurn();
-        //Board.ResetAllTiles();
     }
 
     public void AddEffect(Effect _effect)
@@ -455,12 +507,41 @@ public abstract class Unit : WarforgedMonoBehaviour
             ExecuteSelectedAbility(null);
             return;
         }
-        SelectTiles();
+        HighlightTiles();
     }
 
     public bool IsBehind(Unit _target)
     {
         return false;
+    }
+
+    public void UndoMove()
+    {
+        FinishMoveTo();
+        GetCurrentTile().Unplace();
+        starting_turn_tile.Place(this);
+        transform.position = starting_turn_position;
+        FaceDirection(starting_turn_direction);
+        moves_remaining = SPD; //should be changes if something is reducing the number of moves like an effect
+        GetOwner().SetChosenUnit(null);
+        SetState(new ReadyToMoveState(this));
+        SelectionManager.Select(starting_turn_tile);
+        Camera.main.GetComponent<MainCamera>().MoveToTile(starting_turn_tile);
+    }
+
+    public int CalculateRallyBonus()
+    {
+        int allies = 0;
+        for (int i = -1; i <= 1; ++i)
+        {
+            for (int j = -1; j <= 1; ++j)
+            {
+                if (i == 0 && j == 0) continue; //dont count the tile you're standing on silly
+                Tile tile = Board.G_BOARD.GetTile(x + i, y + j);
+                if (tile && tile.unit && tile.unit.owner == owner) allies++;
+            }
+        }
+        return allies;
     }
 
 }

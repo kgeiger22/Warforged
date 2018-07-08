@@ -4,7 +4,8 @@ using UnityEngine;
 
 public class MainCamera : MonoBehaviour {
 
-    public float move_speed;
+    public float move_speed = 50;
+    public float moveto_speed = 50;
 
     private bool moveto = false;
     private Vector3 target;
@@ -23,7 +24,7 @@ public class MainCamera : MonoBehaviour {
 
         if (moveto)
         {
-            Vector3 newposition = Vector3.SmoothDamp(transform.position, target, ref velocity, 0.25f, move_speed * 1.5f, Time.deltaTime);
+            Vector3 newposition = Vector3.SmoothDamp(transform.position, target, ref velocity, 0.25f, moveto_speed, Time.deltaTime);
             newposition.y = transform.position.y;
             transform.position = newposition;
             if (velocity.magnitude < 0.01f) moveto = false;

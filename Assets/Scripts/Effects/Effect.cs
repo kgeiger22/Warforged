@@ -7,6 +7,7 @@ public abstract class Effect {
     public int duration = -1;
     public Type type;
     protected Unit owner;
+    public string name;
 
     public enum Type
     {
@@ -24,7 +25,7 @@ public abstract class Effect {
 
     public virtual void Delete()
     {
-        Debug.Log("Effect deleted");
+        Debug.Log("Effect " + name + " removed");
         owner.RemoveEffect(this);
     }
 
@@ -32,7 +33,6 @@ public abstract class Effect {
 
     public virtual void OnEndOfRound() {
         duration--;
-        Debug.Log("Effect duration = " + duration);
         if (duration == 0) Delete();
     }
 

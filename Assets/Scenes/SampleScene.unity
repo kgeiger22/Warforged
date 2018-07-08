@@ -5403,6 +5403,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   move_speed: 50
+  moveto_speed: 50
 --- !u!20 &282840813
 Camera:
   m_ObjectHideFlags: 0

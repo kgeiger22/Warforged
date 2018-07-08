@@ -2,13 +2,14 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Melee : Ability {
+public class Melee : Attack {
 
-    public Melee(Unit _owner)
+    public Melee(Unit _owner) : base(_owner)
     {
         name = "Melee";
-        owner = _owner;
         range = 1;
+        attack_type = AttackType.MELEE;
+        damage_type = DamageType.PHYSICAL;
     }
 
     public override void Execute(Unit target)
