@@ -14,7 +14,7 @@ public class GameState : FSM_State {
         MATCH,
     }
 
-    public Player.Info player_info { get; protected set; }
+    public Player.Type player_info { get; protected set; }
     public State_Type type { get; protected set; }
 }
 
@@ -23,28 +23,28 @@ public class LoadState : GameState
     public override void Enter()
     {
         type = State_Type.LOAD;
-        next = new BuildState(Player.Info.PLAYER1);
+        next = new BuildState(Player.Type.PLAYER1);
 
     }
 }
 
     public class BuildState : GameState
 {
-    public BuildState(Player.Info _info)
+    public BuildState(Player.Type _info)
     {
         player_info = _info;
     }
     public override void Enter()
     {
-        Player.SetPlayer(player_info);
+        PlayerManager.SetPlayerTurn(player_info);
         type = State_Type.BUILD;
         CanvasManager.EnableCanvas(CanvasManager.Menu.UNITPLACE);
         switch (player_info)
         {
-            case Player.Info.PLAYER1:
-                next = new BuildState(Player.Info.PLAYER2);
+            case Player.Type.PLAYER1:
+                next = new BuildState(Player.Type.PLAYER2);
                 break;
-            case Player.Info.PLAYER2:
+            case Player.Type.PLAYER2:
                 next = new MatchStartState();
                 break;
             default:
@@ -57,28 +57,27 @@ public class LoadState : GameState
     public override void Exit()
     {
         base.Exit();
-        Player.G_CURRENT_PLAYER.DeleteHeldUnit();
         CanvasManager.DisableCanvas(CanvasManager.Menu.UNITPLACE);
     }
 }
 
 public class TurnState : GameState
 {
-    public TurnState(Player.Info _info)
+    public TurnState(Player.Type _type)
     {
-        player_info = _info;
+        player_info = _type;
     }
     public override void Enter()
     {
-        Player.SetPlayer(player_info);
+        PlayerManager.SetPlayerTurn(player_info);
         type = State_Type.TURN;
         switch (player_info)
         {
-            case Player.Info.PLAYER1:
-                next = new TurnState(Player.Info.PLAYER2);
+            case Player.Type.PLAYER1:
+                next = new TurnState(Player.Type.PLAYER2);
                 break;
-            case Player.Info.PLAYER2:
-                next = new TurnState(Player.Info.PLAYER1);
+            case Player.Type.PLAYER2:
+                next = new TurnState(Player.Type.PLAYER1);
                 break;
             default:
                 Debug.Log("ERROR: No player found for TurnState");
@@ -87,27 +86,27 @@ public class TurnState : GameState
         }
         EventHandler.StartTurn();
         //put code here that applies after every object has started its turn
-        Player.GetPlayer(player_info).SelectFirstValidUnit();
+        //PlayerManager.GetPlayer(player_info).SelectFirstValidUnit();
 
     }
 
     public override void Exit()
     {
         EventHandler.EndTurn();
-        bool player1_round_complete = Player.GetPlayer(Player.Info.PLAYER1).IsRoundCompleteForThisPlayer();
-        bool player2_round_complete = Player.GetPlayer(Player.Info.PLAYER2).IsRoundCompleteForThisPlayer();
-        if (player1_round_complete && player2_round_complete)
-        {
-            next = new RoundState();
-        }
-        else if (player1_round_complete)
-        {
-            next = new TurnState(Player.Info.PLAYER2);
-        }
-        else if (player2_round_complete)
-        {
-            next = new TurnState(Player.Info.PLAYER1);
-        }
+        //bool player1_round_complete = PlayerManager.GetPlayer(Player.Type.PLAYER1).IsRoundCompleteForThisPlayer();
+        //bool player2_round_complete = PlayerManager.GetPlayer(Player.Type.PLAYER2).IsRoundCompleteForThisPlayer();
+        //if (player1_round_complete && player2_round_complete)
+        //{
+        //    next = new RoundState();
+        //}
+        //else if (player1_round_complete)
+        //{
+        //    next = new TurnState(Player.Type.PLAYER2);
+        //}
+        //else if (player2_round_complete)
+        //{
+        //    next = new TurnState(Player.Type.PLAYER1);
+        //}
     }
 }
 
@@ -115,31 +114,13 @@ public class RoundState : GameState
 {
     public override void Enter()
     {
-        EventHandler.EndRound();
+        if (BaseGame.round_number > 0) EventHandler.EndRound();
 
         type = State_Type.ROUND;
-        //decide who moves first
-        int speed_player1 = Player.CalculateSpeed(Player.Info.PLAYER1);
-        int speed_player2 = Player.CalculateSpeed(Player.Info.PLAYER2);
-        if (speed_player1 > speed_player2)
-        {
-            next = new TurnState(Player.Info.PLAYER1);
-        }
-        else if (speed_player2 > speed_player1)
-        {
-            next = new TurnState(Player.Info.PLAYER2);
-        }
-        else
-        {
-            //decide randomly
-            float rng = Random.value;
-            if (rng < 0.5f) next = new TurnState(Player.Info.PLAYER1);
-            else next = new TurnState(Player.Info.PLAYER2);
-        }
+        next = new TurnState(PlayerManager.GetHighestSPDPlayerType());
         EventHandler.StartRound();
-        BaseGame.G_GAMESTATEFSM.NextState();
-
-        GameObject.Find("Button_NextRound").GetComponent<ButtonNextRound>().i++;
+        Global.GAMESTATEFSM.NextState();
+        BaseGame.round_number++;
         GameObject.Instantiate(Resources.Load("Prefabs/CanvasNewRound"));
     }
 }
@@ -152,6 +133,6 @@ public class MatchStartState : GameState
         next = new RoundState();
         EventHandler.StartMatch();
         Debug.Log("Match Started");
-        BaseGame.G_GAMESTATEFSM.NextState();
+        Global.GAMESTATEFSM.NextState();
     }
 }

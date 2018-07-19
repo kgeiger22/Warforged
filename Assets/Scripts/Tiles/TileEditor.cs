@@ -9,7 +9,7 @@ public class TileEditor : MonoBehaviour {
     [SerializeField, HideInInspector]
     public Tile.Tile_Type editor_type = Tile.Tile_Type.FLATLAND;
     [SerializeField, HideInInspector]
-    public Player.Info editor_owner = Player.Info.NONE;
+    public Player.Type editor_owner = Player.Type.NONE;
 
     [HideInInspector]
     public bool ready_to_delete = false;

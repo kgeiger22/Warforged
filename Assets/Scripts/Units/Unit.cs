@@ -36,16 +36,36 @@ public abstract class Unit : WarforgedMonoBehaviour
     public Material player1_material;
     [SerializeField]
     public Material player2_material;
+
+    public Player.Type owner; //{ get; protected set; }
+    public void SetOwner(Player.Type _owner) { owner = _owner; }
+
+    protected int HP;
+    protected int ATK;
+    protected int DEF;
+    protected int SPD;
+    protected int ACC;
+
+    public int ATK_modifier;
+    public int DEF_modifier;
+    public int SPD_modifier;
+    public int ACC_modifier;
+
+    public int GetTrueHP() { return HP; }
+    public int GetTrueATK() { return ATK; }
+    public int GetTrueDEF() { return DEF; }
+    public int GetTrueSPD() { return SPD; }
+    public int GetTrueACC() { return ACC; }
     
-    public Player.Info owner { get; protected set; }
-    public void SetOwner(Player.Info _owner) { owner = _owner; }
+    public int GetModifiedATK() { return ATK + ATK_modifier; }
+    public int GetModifiedDEF() { return DEF + DEF_modifier; }
+    public int GetModifiedSPD() { return SPD + SPD_modifier; }
+    public int GetModifiedACC() { return ACC + ACC_modifier; }
 
-    public int HP { get; protected set; }
-    public int ATK { get; protected set; }
-    public int DEF { get; protected set; }
-    public int SPD { get; protected set; }
-    public int ACC { get; protected set; }
+    public void ModifyMovesRemaining(int _amount) { moves_remaining += _amount; }
 
+    public int ID { get; protected set; }
+    public void SetID(int _id) { ID = _id; }
     public int x { get; protected set; }
     public int y { get; protected set; }
     public void SetCoordinates(int _x, int _y)
@@ -68,6 +88,8 @@ public abstract class Unit : WarforgedMonoBehaviour
     private Tile next_tile;
     private float lerp_time;
 
+    private static DirectionController direction_controller;
+
     public List<Ability> abilities { get; protected set; }
     public List<Effect> effects { get; protected set; }
 
@@ -77,6 +99,11 @@ public abstract class Unit : WarforgedMonoBehaviour
     protected override void OnInstantiate()
     {
         fsm = new UnitStateFSM(this);
+        if (!direction_controller)
+        {
+            direction_controller = GameObject.Find("DirectionController").GetComponent<DirectionController>();
+            direction_controller.gameObject.SetActive(false);
+        }
         //InitializeVariables();
     }
     
@@ -122,7 +149,6 @@ public abstract class Unit : WarforgedMonoBehaviour
 
     protected override void OnRoundEnd()
     {
-        ActivateGenericEffects(Effect.Type.END_OF_ROUND);
         for (int i = effects.Count - 1; i >= 0; --i)
         {
             effects[i].OnEndOfRound();
@@ -132,11 +158,11 @@ public abstract class Unit : WarforgedMonoBehaviour
     public void Place(Tile _tile)
     {
         //apply correct material
-        if (owner == Player.Info.PLAYER1)
+        if (owner == Player.Type.PLAYER1)
         {
             SetMaterials(player1_material);
         }
-        else if (owner == Player.Info.PLAYER2)
+        else if (owner == Player.Type.PLAYER2)
         {
             SetMaterials(player2_material);
         }
@@ -144,14 +170,8 @@ public abstract class Unit : WarforgedMonoBehaviour
         transform.position = _tile.transform.position + new Vector3(0, 0.5f, 0);
         //tell the tile that it owns this unit
         _tile.Place(this);
-        //reset player held value
-        GetPlayer(owner).DropUnit();
         //switch unit state upon placement
         SetState(new InactiveState(this));
-        //apply monetary cost to player
-        GetPlayer(owner).PurchaseUnit(type);
-        //add unit to player unit pool
-        GetPlayer(owner).AddUnit(this);
         //Update selection
         SelectionManager.Reselect();
         //If the unit was a draggable, disable draggable script
@@ -211,7 +231,7 @@ public abstract class Unit : WarforgedMonoBehaviour
 
     public Player GetOwner()
     {
-        return GetPlayer(owner);
+        return PlayerManager.GetPlayer(owner);
     }
 
     protected void HighlightMovableTiles()
@@ -255,7 +275,11 @@ public abstract class Unit : WarforgedMonoBehaviour
             //if (GetState() == UnitState.State_Type.READYTOMOVE) 
             if (GetGameState() == GameState.State_Type.TURN && GetState() != UnitState.State_Type.INACTIVE && (GetOwner().chosen_unit == null || GetOwner().chosen_unit == this))
             {
-                if (GetState() == UnitState.State_Type.READYTOATTACK) CanvasManager.EnableCanvas(CanvasManager.Menu.UNITABILITY);
+                if (GetState() == UnitState.State_Type.READYTOATTACK)
+                {
+                    CanvasManager.EnableCanvas(CanvasManager.Menu.UNITABILITY);
+                    EnableDirectionController();
+                }
                 HighlightTiles();
             }
         }
@@ -265,6 +289,7 @@ public abstract class Unit : WarforgedMonoBehaviour
     {
         CanvasManager.DisableCanvas(CanvasManager.Menu.UNITINFO);
         CanvasManager.DisableCanvas(CanvasManager.Menu.UNITABILITY);
+        DisableDirectionController();
         Board.ResetAllTiles();
     }
 
@@ -286,7 +311,7 @@ public abstract class Unit : WarforgedMonoBehaviour
     {
         if (IsSelected()) OnUnselect();
         GetCurrentTile().Unplace();
-        GetPlayer(owner).RemoveUnit(this);
+        UnitManager.RemoveUnit(ID);
         if (GetGameState() == GameState.State_Type.BUILD)
         {
             CanvasManager.GetCanvas(CanvasManager.Menu.UNITPLACE).GetComponent<UnitPlaceCanvas>().AddUnitPlaceButton(this);
@@ -305,7 +330,7 @@ public abstract class Unit : WarforgedMonoBehaviour
 
     public bool BelongsToCurrentPlayer()
     {
-        return owner == Player.G_CURRENT_PLAYER.info;
+        return owner == PlayerManager.CurrentPlayer;
     }
 
     public void MoveTo(Tile tile)
@@ -340,7 +365,7 @@ public abstract class Unit : WarforgedMonoBehaviour
 
         SetState(new ReadyToAttackState(this));
         //Board.ResetAllTiles();
-        GetOwner().SetChosenUnit(this);
+        //GetOwner().SetChosenUnit(this);
         SelectionManager.Reselect();
         //move camera
         Camera.main.GetComponent<MainCamera>().MoveToTile(tile);
@@ -408,7 +433,6 @@ public abstract class Unit : WarforgedMonoBehaviour
             damage_text.SetText("MISS");
             return;
         }
-        ActivateReceiveDamageEffects(ref _damage);
         int rounded_damage = Mathf.RoundToInt(_damage);
         health -= rounded_damage;
         damage_text.SetText("-" + rounded_damage.ToString());
@@ -434,31 +458,12 @@ public abstract class Unit : WarforgedMonoBehaviour
         }
     }
 
-    protected void ActivateReceiveDamageEffects(ref float _damage)
-    {
-        foreach (Effect e in effects)
-        {
-            if (e.type != Effect.Type.RECEIVE_DAMAGE) continue;
-            else e.Activate(ref _damage);
-        }
-    }
 
-    protected void ActivateGenericEffects(Effect.Type _type)
-    {
-        foreach (Effect e in effects)
-        {
-            if (e.type != _type) continue;
-            else
-            {
-                e.Activate();
-            }
-        }
-    }
 
     public void ApplyEffect(Effect _effect)
     {
-        _effect.OnApply();
         effects.Add(_effect);
+        _effect.OnApply();
     }
 
     public void ResetWithDraggable()
@@ -486,7 +491,8 @@ public abstract class Unit : WarforgedMonoBehaviour
     public void EndTurn()
     {
         SetState(new InactiveState(this));
-        GetOwner().EndTurn();
+        SelectionManager.Unselect();
+        GameStateManager.EndTurn();
     }
 
     public void AddEffect(Effect _effect)
@@ -523,8 +529,9 @@ public abstract class Unit : WarforgedMonoBehaviour
         transform.position = starting_turn_position;
         FaceDirection(starting_turn_direction);
         moves_remaining = SPD; //should be changes if something is reducing the number of moves like an effect
-        GetOwner().SetChosenUnit(null);
+        //GetOwner().SetChosenUnit(null);
         SetState(new ReadyToMoveState(this));
+        OnUnselect();
         SelectionManager.Select(starting_turn_tile);
         Camera.main.GetComponent<MainCamera>().MoveToTile(starting_turn_tile);
     }
@@ -544,4 +551,34 @@ public abstract class Unit : WarforgedMonoBehaviour
         return allies;
     }
 
+    private void EnableDirectionController()
+    {
+        direction_controller.SetOwner(this);
+        direction_controller.gameObject.SetActive(true);
+        direction_controller.transform.position = GetCurrentTile().transform.position + new Vector3(0, 2, 0);
+    }
+
+    private void DisableDirectionController()
+    {
+        direction_controller.SetOwner(null);
+        direction_controller.gameObject.SetActive(false);
+    }
+
+    public bool HasAbility(string _ability_name)
+    {
+        foreach(Ability a in abilities)
+        {
+            if (a.name == _ability_name) return true;
+        }
+        return false;
+    }
+
+    public bool HasEffect(string _effect_name)
+    {
+        foreach (Effect e in effects)
+        {
+            if (e.name == _effect_name) return true;
+        }
+        return false;
+    }
 }

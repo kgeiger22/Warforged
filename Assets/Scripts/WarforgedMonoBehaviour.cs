@@ -87,7 +87,7 @@ public class WarforgedMonoBehaviour : MonoBehaviour {
 
     protected void Update()
     {
-        if (GameStateManager.GetGameState().type != GameState.State_Type.LOAD)
+        if (GameStateFSM.GetGameState().type != GameState.State_Type.LOAD)
         {
             OnUpdate();
         }
@@ -115,20 +115,7 @@ public class WarforgedMonoBehaviour : MonoBehaviour {
 
     protected GameState.State_Type GetGameState()
     {
-        return GameStateManager.GetGameState().type;
+        return GameStateFSM.GetGameState().type;
     }
 
-    protected static Player GetPlayer(Player.Info _info)
-    {
-        switch (_info)
-        {
-            case Player.Info.PLAYER1:
-                return Player.G_PLAYERS[0];
-            case Player.Info.PLAYER2:
-                return Player.G_PLAYERS[1];
-            default:
-                Debug.Log("ERROR: Not a valid player");
-                return null;
-        }
-    }
 }

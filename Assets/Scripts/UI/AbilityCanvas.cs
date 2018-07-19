@@ -22,7 +22,7 @@ public class AbilityCanvas : MonoBehaviour
 
     private void OnEnable()
     {
-        if (BaseGame.G_GAMESTATEFSM != null && GameStateManager.GetGameState().type == GameState.State_Type.TURN) DisplayAbilitiesForCurrentUnit();
+        if (Global.GAMESTATEFSM != null && GameStateFSM.GetGameState().type == GameState.State_Type.TURN) DisplayAbilitiesForCurrentUnit();
     }
 
     public void AddAbilityButton(ButtonAbility _button)

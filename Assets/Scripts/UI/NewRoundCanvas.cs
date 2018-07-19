@@ -8,7 +8,7 @@ public class NewRoundCanvas : MonoBehaviour {
 	// Use this for initialization
 	void Start () {
         Destroy(gameObject, 2);
-        transform.Find("Text").GetComponent<Text>().text = "Round " + GameObject.Find("Button_NextRound").GetComponent<ButtonNextRound>().i;
+        transform.Find("Text").GetComponent<Text>().text = "Round " + BaseGame.round_number;
     }
 	
 }

@@ -20,11 +20,11 @@ public class ButtonGenerateUnit : MonoBehaviour {
 
     private void Update()
     {
-        if (GameStateManager.GetGameState().type != GameState.State_Type.BUILD)
+        if (GameStateFSM.GetGameState().type != GameState.State_Type.BUILD)
         {
             button.interactable = false;
         }
-        else if (Player.G_CURRENT_PLAYER.money < Unit.GetCost(type))
+        else if (PlayerManager.GetCurrentPlayer().money < Unit.GetCost(type))
         {
             button.interactable = false;
         }

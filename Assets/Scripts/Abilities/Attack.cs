@@ -36,7 +36,7 @@ public abstract class Attack : Ability {
     protected virtual void DealDamage(Unit target, float damage)
     {
         float accuracy_roll = Random.Range(0f, 1f);
-        float owner_accuray = owner.ACC;
+        float owner_accuray = owner.GetModifiedACC();
         if (accuracy_roll > owner_accuray)
         {
             //miss
@@ -55,6 +55,6 @@ public abstract class Attack : Ability {
         int defender_rally_bonus = target.CalculateRallyBonus();
         if (defender_rally_bonus > 0) Debug.Log("Defender Rally + " + defender_rally_bonus);
 
-        target.ReceiveDamage(damage * damage_multiplier * (owner.ATK + attacker_rally_bonus) * ((100f - (target.DEF + defender_rally_bonus)) * 0.01f));
+        target.ReceiveDamage(damage * damage_multiplier * (owner.GetModifiedATK() + attacker_rally_bonus) * ((100f - (target.GetModifiedDEF() + defender_rally_bonus)) * 0.01f));
     }
 }

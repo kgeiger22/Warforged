@@ -37,8 +37,8 @@ public class UnitInfoCanvas : MonoBehaviour {
         else
         {
             unit_type.text = "Type: " + unit.type.ToString();
-            unit_hp.text = "HP: " + unit.health + "/" + unit.HP;
-            unit_moves.text = "Moves: " + unit.moves_remaining + "/" + unit.SPD;
+            unit_hp.text = "HP: " + unit.health + "/" + unit.GetTrueHP();
+            unit_moves.text = "Moves: " + unit.moves_remaining + "/" + unit.GetModifiedSPD();
             unit_state.text = unit.GetState().ToString();
         }
 

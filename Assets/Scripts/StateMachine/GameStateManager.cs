@@ -2,18 +2,19 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class GameStateManager : FSM {
+public static class GameStateManager {
 
-
-    public static GameState GetGameState()
+	public static void EndTurn()
     {
-        return BaseGame.G_GAMESTATEFSM.state as GameState;
+        if (UnitManager.RemainingUnitsWithMoves() == 0)
+        {
+            Global.GAMESTATEFSM.SetState(new RoundState());
+        }
+        else Global.GAMESTATEFSM.NextState();
     }
 
-    public GameStateManager()
+    public static void EndRound()
     {
-        BaseGame.G_GAMESTATEFSM = this;
+
     }
-
-
 }

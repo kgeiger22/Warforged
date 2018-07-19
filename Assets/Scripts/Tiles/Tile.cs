@@ -20,8 +20,8 @@ public abstract class Tile : WarforgedMonoBehaviour
     public int movement_cost { get; protected set; }
 
     public Unit unit { get; protected set; }
-    public Player.Info owner { get; protected set; }
-    public void SetOwner(Player.Info _info)
+    public Player.Type owner { get; protected set; }
+    public void SetOwner(Player.Type _info)
     {
         owner = _info;
     }
@@ -91,8 +91,8 @@ public abstract class Tile : WarforgedMonoBehaviour
         else if (hovered) mat = materrial_hoverable;
         else if (movable) mat = materrial_movable;
         else if (targettable) mat = material_targettable;
-        else if (GetGameState() == GameState.State_Type.BUILD && owner == Player.Info.PLAYER1) mat = material_player1;
-        else if (GetGameState() == GameState.State_Type.BUILD && owner == Player.Info.PLAYER2) mat = material_player2;
+        else if (GetGameState() == GameState.State_Type.BUILD && owner == Player.Type.PLAYER1) mat = material_player1;
+        else if (GetGameState() == GameState.State_Type.BUILD && owner == Player.Type.PLAYER2) mat = material_player2;
         else mat = material_highlight;
         GetHighlightRenderer().material = mat;
     }
@@ -136,8 +136,7 @@ public abstract class Tile : WarforgedMonoBehaviour
                 selected_unit.ExecuteSelectedAbility(unit);
                 return;
             }
-
-            if (Player.G_CURRENT_PLAYER.held_unit && Player.G_CURRENT_PLAYER.held_unit.GetComponent<Draggable>().IsPlaceable()) Player.G_CURRENT_PLAYER.held_unit.Place(this);
+            //put placement code here
             SelectionManager.Select(this);
         }
     }
@@ -155,7 +154,7 @@ public abstract class Tile : WarforgedMonoBehaviour
 
     public bool BelongsToCurrentPlayer()
     {
-        return Player.G_CURRENT_PLAYER.info == owner;
+        return PlayerManager.CurrentPlayer == owner;
     }
 
     public bool IsWalkable()
@@ -175,7 +174,7 @@ public abstract class Tile : WarforgedMonoBehaviour
     }
 
 
-    public void ChangeTile(Tile_Type _type, Player.Info _info)
+    public void ChangeTile(Tile_Type _type, Player.Type _info)
     {
         Tile new_tile = null;
         switch (_type)
@@ -245,8 +244,8 @@ public abstract class Tile : WarforgedMonoBehaviour
 
     public void SetPlayerHighlight()
     {
-        if (owner == Player.Info.PLAYER1) GetHighlightRenderer().material = Resources.Load<Material>("Materials/PurpleSelectable");
-        else if (owner == Player.Info.PLAYER2) GetHighlightRenderer().material = Resources.Load<Material>("Materials/OrangeSelectable");
+        if (owner == Player.Type.PLAYER1) GetHighlightRenderer().material = Resources.Load<Material>("Materials/PurpleSelectable");
+        else if (owner == Player.Type.PLAYER2) GetHighlightRenderer().material = Resources.Load<Material>("Materials/OrangeSelectable");
     }
 
     public static Direction GetDirectionBetweenTiles(Tile current, Tile target)

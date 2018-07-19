@@ -25,7 +25,6 @@ public class UnitPlaceButton : MonoBehaviour {
     {
         unit.gameObject.SetActive(true);
         unit.ResetWithDraggable();
-        Player.G_CURRENT_PLAYER.HoldUnit(unit);
         transform.parent.GetComponent<UnitPlaceCanvas>().RemovePlaceButton(index);
     }
 }

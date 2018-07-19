@@ -16,12 +16,12 @@ public class ButtonNextState : MonoBehaviour {
 
     // Update is called once per frame
     private void Update () {
-        if (text != null) text.text = GameStateManager.GetGameState().type.ToString();
-        if (Player.G_CURRENT_PLAYER.info == Player.Info.PLAYER1)
+        if (text != null) text.text = GameStateFSM.GetGameState().type.ToString();
+        if (PlayerManager.CurrentPlayer == Player.Type.PLAYER1)
         {
             image.color = new Color(1, 0.5f, 1);
         }
-        else if (Player.G_CURRENT_PLAYER.info == Player.Info.PLAYER2)
+        else if (PlayerManager.CurrentPlayer == Player.Type.PLAYER2)
         {
             image.color = new Color(1, 0.75f, 0.4f);
         }
@@ -33,6 +33,6 @@ public class ButtonNextState : MonoBehaviour {
 
     public void NextState()
     {
-        BaseGame.G_GAMESTATEFSM.NextState();
+        Global.GAMESTATEFSM.NextState();
     }
 }

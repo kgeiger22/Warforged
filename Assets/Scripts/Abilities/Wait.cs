@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+//Ends turn
 public class Wait : Ability {
 
     public Wait(Unit _owner) : base(_owner)

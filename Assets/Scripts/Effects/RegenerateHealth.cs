@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+//Passive: Heals X health at end of each round
 public class RegenerateHealth : Effect {
 
     int amount;
@@ -10,12 +11,12 @@ public class RegenerateHealth : Effect {
     {
         amount = _amount;
         duration = -1;
-        type = Type.END_OF_ROUND;
         name = "Regenerate";
     }
 
-    public override void Activate()
+    public override void OnEndOfRound()
     {
         owner.ReceiveHealing(amount);
+        base.OnEndOfRound();
     }
 }

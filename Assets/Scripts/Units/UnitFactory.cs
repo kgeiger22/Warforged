@@ -4,7 +4,7 @@ using UnityEngine;
 
 public static class UnitFactory {
 
-    public static Unit GenerateUnit(Unit.Type _type, Player.Info _info)
+    public static int GenerateUnit(Unit.Type _type, Player.Type _info, bool _active = true)
     {
         Unit unit;
         switch (_type)
@@ -20,15 +20,15 @@ public static class UnitFactory {
                 break;
             default:
                 Debug.Log("ERROR: Unit type not found");
-                return null;
+                return -1;
         }
 
         switch (_info)
         {
-            case Player.Info.PLAYER1:
+            case Player.Type.PLAYER1:
                 unit.FaceDirection(WarforgedMonoBehaviour.Direction.RIGHT);
                 break;
-            case Player.Info.PLAYER2:
+            case Player.Type.PLAYER2:
                 unit.FaceDirection(WarforgedMonoBehaviour.Direction.LEFT);
                 break;
             default:
@@ -37,14 +37,14 @@ public static class UnitFactory {
         }
         unit.SetOwner(_info);
         unit.InitializeVariables();
-
-        return unit;
+        unit.gameObject.SetActive(_active);
+        return UnitManager.AddUnit(unit);
     }
 
     //public static Unit GenerateDraggableUnit(Unit.Type _type)
     //{
     //    //draggable units always belong to the current player
-    //    Unit unit = GenerateUnit(_type, Player.G_CURRENT_PLAYER.info);
+    //    Unit unit = GenerateUnit(_type, PlayerManager.CurrentPlayer.info);
     //    unit.gameObject.AddComponent<Draggable>();
     //    return unit;
     //}

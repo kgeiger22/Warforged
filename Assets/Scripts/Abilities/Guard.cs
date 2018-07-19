@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+//Increases defense by 25 until end of round
 public class Guard : Ability {
 
     public Guard(Unit _owner) : base(_owner)
@@ -12,7 +13,7 @@ public class Guard : Ability {
 
     public override void Execute(Unit target)
     {
-        ApplyEffect(owner, new AmplifyDamageReceived(owner, 0.5f));
+        ApplyEffect(owner, new ModifyDefense(owner, 25, 1));
     }
 
     protected override bool IsValidTile(Tile tile)

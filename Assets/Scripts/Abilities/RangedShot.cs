@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+//Ranged physical attack that can hit targets 3 tiles away
 public class RangedShot : Attack {
 
     public RangedShot(Unit _owner) : base(_owner)

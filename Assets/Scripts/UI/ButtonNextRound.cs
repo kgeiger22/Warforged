@@ -7,7 +7,6 @@ public class ButtonNextRound : MonoBehaviour {
 
     Text text;
     Button button;
-    public int i = 0;
 
     private void Awake()
     {
@@ -18,8 +17,8 @@ public class ButtonNextRound : MonoBehaviour {
     // Update is called once per frame
     private void Update()
     {
-        if (text != null) text.text = "Round" + i;
-        if (GameStateManager.GetGameState().type == GameState.State_Type.TURN)
+        if (text != null) text.text = "Round" + BaseGame.round_number;
+        if (GameStateFSM.GetGameState().type == GameState.State_Type.TURN)
         {
             button.interactable = true;
         }
@@ -28,6 +27,6 @@ public class ButtonNextRound : MonoBehaviour {
 
     public void NextRound()
     {
-        BaseGame.G_GAMESTATEFSM.SetState(new RoundState());
+        Global.GAMESTATEFSM.SetState(new RoundState());
     }
 }

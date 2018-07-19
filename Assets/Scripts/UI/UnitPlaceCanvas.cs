@@ -12,15 +12,15 @@ public class UnitPlaceCanvas : MonoBehaviour {
 	public void DisplayUnitsForCurrentPlayer()
     {
         Clear();
-        foreach (Unit unit in Player.G_CURRENT_PLAYER.army)
+        foreach (Unit unit in UnitManager.units.Values)
         {
-            AddUnitPlaceButton(unit);
+            if (unit.owner == PlayerManager.CurrentPlayer) AddUnitPlaceButton(unit);
         }
     }
 
     private void OnEnable()
     {
-        if (BaseGame.G_GAMESTATEFSM != null && GameStateManager.GetGameState().type == GameState.State_Type.BUILD)  DisplayUnitsForCurrentPlayer();
+        if (Global.GAMESTATEFSM != null && GameStateFSM.GetGameState().type == GameState.State_Type.BUILD && UnitManager.units != null)  DisplayUnitsForCurrentPlayer();
     }
 
     public void AddUnitPlaceButton(UnitPlaceButton _button)

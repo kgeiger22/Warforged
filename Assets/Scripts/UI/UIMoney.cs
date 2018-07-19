@@ -15,6 +15,6 @@ public class UIMoney : MonoBehaviour {
 
     // Update is called once per frame
     void Update () {
-        if (Player.G_CURRENT_PLAYER) text.text = Player.G_CURRENT_PLAYER.money.ToString();
+        if (PlayerManager.GetCurrentPlayer()) text.text = PlayerManager.GetCurrentPlayer().money.ToString();
 	}
 }

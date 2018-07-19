@@ -35,15 +35,27 @@ public class Draggable : WarforgedMonoBehaviour
 
     public void LateUpdate()
     {
-        if (Input.GetMouseButtonDown(1))
+        if (Input.GetMouseButtonDown(0))
         {
-            Player.G_CURRENT_PLAYER.DeleteHeldUnit();
+            RaycastHit hit;
+            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+            string[] listofstrings = {
+                "Tile",
+            };
+            int mask = LayerMask.GetMask(listofstrings);
+            if (Physics.Raycast(ray, out hit, 200, mask))
+            {
+                unit.Place(hit.transform.gameObject.GetComponent<Tile>());
+            }
+        }
+        else if (Input.GetMouseButtonDown(1))
+        {
+            unit.Delete();
         }
     }
 
     public bool IsPlaceable()
     {
-        if (GetPlayer(unit.owner).money - Unit.GetCost(unit.type) < 0) return false;
         if (!SelectionManager.hovered || !SelectionManager.hovered.IsWalkable() || !SelectionManager.hovered.BelongsToCurrentPlayer())
         {
             Tile tile = SelectionManager.GetSelectedTile();
